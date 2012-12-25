@@ -4,41 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GLES
+namespace CSharpPlatform
 {
-	unsafe public struct Vector4
-	{
-		public float x, y, z, w;
-
-		public float this[int Index]
-		{
-			get { fixed (float* ValuesPtr = &x) return ValuesPtr[Index]; }
-			set { fixed (float* ValuesPtr = &x) ValuesPtr[Index] = value; }
-		}
-
-		static public Vector4 Create(params float[] Values)
-		{
-			var Vector = default(Vector4);
-			for (int n = 0; n < 4; n++) Vector[n] = Values[n];
-			return Vector;
-		}
-
-		public void AddInplace(Vector4 Right)
-		{
-			for (int n = 0; n < 4; n++) this[n] = Right[n];
-		}
-
-		static public void Add(ref Vector4 Left, ref Vector4 Right, ref Vector4 Destination)
-		{
-			for (int n = 0; n < 4; n++) Destination[n] = Left[n] + Right[n];
-		}
-
-		public override string ToString()
-		{
-			return String.Format("Vector4({0}, {1}, {2}, {3})", x, y, z, w);
-		}
-	}
-
 	unsafe public struct Matrix4
 	{
 		public Vector4 Row0, Row1, Row2, Row3;
@@ -116,7 +83,7 @@ namespace GLES
 			return Matrix;
 		}
 
-		public float this[int Row, int Column]
+		public float this[int Column, int Row]
 		{
 			get { fixed (Vector4* RowsPtr = &Row0) return RowsPtr[Row][Column]; }
 			set { fixed (Vector4* RowsPtr = &Row0) RowsPtr[Row][Column] = value; }
@@ -130,8 +97,8 @@ namespace GLES
 				for (int Row = 0; Row < 4; Row++)
 				{
 					float Dot = 0;
-					for (int Index = 0; Index < 4; Index++) Dot += Left[Row, Index] * Right[Index, Column];
-					New[Row, Column] = Dot;
+					for (int Index = 0; Index < 4; Index++) Dot += Left[Index, Row] * Right[Column, Index];
+					New[Column, Row] = Dot;
 				}
 			}
 			return New;
