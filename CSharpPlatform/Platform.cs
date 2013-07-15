@@ -41,7 +41,8 @@ namespace CSPspEmu.Core
 					{
 						try
 						{
-							_Architecture = ProcessUtils.ExecuteCommand("uname", "-m");
+							var Result = ProcessUtils.ExecuteCommand("uname", "-m");
+							_Architecture = Result.OutputString;
 							//_Architecture = Environment.GetEnvironmentVariable("HOSTTYPE");
 							//_Architecture = Environment.GetEnvironmentVariable("MACHTYPE");
 						}
