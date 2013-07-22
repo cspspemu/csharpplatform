@@ -8,14 +8,14 @@ namespace CSharpPlatform
 {
 	unsafe public struct Matrix4
 	{
-		public Vector4 Row0, Row1, Row2, Row3;
+		public Vector4fRaw Row0, Row1, Row2, Row3;
 
-		public Vector4 Column(int n)
+		public Vector4fRaw Column(int n)
 		{
-			return Vector4.Create(Row0[n], Row1[n], Row2[n], Row3[n]);
+			return Vector4fRaw.Create(Row0[n], Row1[n], Row2[n], Row3[n]);
 		}
 
-		static public Matrix4 Create(params Vector4[] Rows)
+		static public Matrix4 Create(params Vector4fRaw[] Rows)
 		{
 			var Matrix = default(Matrix4);
 			for (int Row = 0; Row < 4; Row++)
@@ -70,10 +70,10 @@ namespace CSharpPlatform
 			_1over_fmn = 1.0f / fmn;
 			_1over_tmb = 1.0f / tmb;
 
-			Matrix.Row0 = Vector4.Create(2.0f * _1over_rml, 0, 0, 0);
-			Matrix.Row1 = Vector4.Create(0, 2.0f * _1over_tmb, 0, 0);
-			Matrix.Row2 = Vector4.Create(0, 0, -2.0f * _1over_fmn, 0);
-			Matrix.Row3 = Vector4.Create(
+			Matrix.Row0 = Vector4fRaw.Create(2.0f * _1over_rml, 0, 0, 0);
+			Matrix.Row1 = Vector4fRaw.Create(0, 2.0f * _1over_tmb, 0, 0);
+			Matrix.Row2 = Vector4fRaw.Create(0, 0, -2.0f * _1over_fmn, 0);
+			Matrix.Row3 = Vector4fRaw.Create(
 				-(right + left) * _1over_rml,
 				-(top + bottom) * _1over_tmb,
 				-(far + near) * _1over_fmn,
@@ -85,8 +85,8 @@ namespace CSharpPlatform
 
 		public float this[int Column, int Row]
 		{
-			get { fixed (Vector4* RowsPtr = &Row0) return RowsPtr[Row][Column]; }
-			set { fixed (Vector4* RowsPtr = &Row0) RowsPtr[Row][Column] = value; }
+			get { fixed (Vector4fRaw* RowsPtr = &Row0) return RowsPtr[Row][Column]; }
+			set { fixed (Vector4fRaw* RowsPtr = &Row0) RowsPtr[Row][Column] = value; }
 		}
 
 		static public Matrix4 Multiply(Matrix4 Left, Matrix4 Right)
