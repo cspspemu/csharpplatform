@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CSharpPlatform
 {
-	[StructLayout(LayoutKind.Sequential, Pack = 16, Size = 16)]
+	[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
 	unsafe public struct Vector4fRaw
 	{
 		public float X, Y, Z, W;
