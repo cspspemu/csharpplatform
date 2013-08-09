@@ -48,8 +48,6 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="AL.cs" />
-    <Compile Include="ALC.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

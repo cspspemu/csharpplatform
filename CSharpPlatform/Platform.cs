@@ -1,39 +1,49 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using CSharpUtils;
+using System.Security;
 
 namespace CSPspEmu.Core
 {
+	public enum OS
+	{
+		Windows,
+		Linux,
+		Mac,
+		Android,
+		IOS,
+	}
+
+	public enum Architecture
+	{
+		x64,
+		x86,
+		arm,
+		mips,
+	}
+
 	public static unsafe class Platform
 	{
 		static Logger Logger = Logger.GetLogger("Platform");
 
-		public enum OS
-		{
-			Windows,
-			Posix,
-		}
+		public static bool IsWindows { get { return OS == OS.Windows; } }
+		public static bool IsPosix { get { return !IsWindows; } }
 
-		public static OS OperatingSystem;
+		public static OS OS;
 
-		public static bool Is32Bit
-		{
-			get
-			{
-				return !Environment.Is64BitProcess;
-			}
-		}
+		public static bool Is64Bit { get { return Environment.Is64BitProcess; } }
+		public static bool Is32Bit { get { return !Environment.Is64BitProcess; } }
 
 		private static string _Architecture;
 
-		public static string Architecture
+		public static Architecture Architecture
 		{
 			get
 			{
 				if (_Architecture == null)
 				{
 					//Environment.OSVersion
-					if (OperatingSystem == OS.Windows)
+					if (OS == OS.Windows)
 					{
 						_Architecture = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
 					}
@@ -53,7 +63,11 @@ namespace CSPspEmu.Core
 						}
 					}
 				}
-				return _Architecture;
+				switch (_Architecture)
+				{
+					case "AMD64": return Architecture.x64;
+				}
+				return (Architecture)Enum.Parse(typeof(Architecture), _Architecture);
 			}
 		}
 
@@ -67,11 +81,13 @@ namespace CSPspEmu.Core
 				case PlatformID.Win32Windows:
 				case PlatformID.WinCE:
 				case PlatformID.Win32S:
-					OperatingSystem = OS.Windows;
+					OS = OS.Windows;
 					break;
 				case PlatformID.MacOSX:
+					OS = OS.Mac;
+					break;
 				case PlatformID.Unix:
-					OperatingSystem = OS.Posix;
+					OS = OS.Linux;
 					break;
 				default:
 					throw (new PlatformNotSupportedException());
@@ -249,11 +265,10 @@ namespace CSPspEmu.Core
 
 		public static void Free(void* Address, uint Size)
 		{
-			switch (OperatingSystem)
+			switch (OS)
 			{
 				case OS.Windows: InternalWindows.VirtualFree(Address, 0, MEM_RELEASE); break;
-				case OS.Posix: InternalUnix.munmap(Address, Size); break;
-				default: throw (new NotImplementedException());
+				default: InternalUnix.munmap(Address, Size); break;
 			}
 		}
 
@@ -270,7 +285,7 @@ namespace CSPspEmu.Core
 
 		private static void* _AllocRange(void* Address, uint Size, bool Guard)
 		{
-			switch (OperatingSystem)
+			switch (OS)
 			{
 				case OS.Windows:
 					{
@@ -294,7 +309,7 @@ namespace CSPspEmu.Core
 						}
 						return Pointer;
 					}
-				case OS.Posix:
+				default:
 					{
 						int errno;
 
@@ -349,5 +364,33 @@ namespace CSPspEmu.Core
 		}
 
 		public static bool IsMono { get; private set; }
+
+		[DllImport("libc")]
+		static extern int uname(IntPtr buf);
+
+		static bool IsRunningOnMac()
+		{
+			IntPtr buf = IntPtr.Zero;
+			try
+			{
+				buf = Marshal.AllocHGlobal(8192);
+				// This is a hacktastic way of getting sysname from uname ()
+				if (uname(buf) == 0)
+				{
+					string os = Marshal.PtrToStringAnsi(buf);
+					if (os == "Darwin")
+						return true;
+				}
+			}
+			catch
+			{
+			}
+			finally
+			{
+				if (buf != IntPtr.Zero)
+					Marshal.FreeHGlobal(buf);
+			}
+			return false;
+		}
 	}
 }

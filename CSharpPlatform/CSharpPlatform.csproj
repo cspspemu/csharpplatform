@@ -37,6 +37,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -44,6 +45,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AL\AL.cs" />
+    <Compile Include="AL\ALC.cs" />
+    <Compile Include="GL\DynamicLibraryOpengl.cs" />
+    <Compile Include="GL\GL.cs" />
+    <Compile Include="GL\Impl\EGL.cs" />
+    <Compile Include="GL\Impl\WGL.cs" />
+    <Compile Include="GL\Impl\WGL_Tools.cs" />
+    <Compile Include="Intrinsics.cs" />
+    <Compile Include="Library\DynamicLibraryFactory.cs" />
+    <Compile Include="Library\Impl\DynamicLibraryPosix.cs" />
+    <Compile Include="Library\Impl\DynamicLibraryWindows.cs" />
+    <Compile Include="Library\IDynamicLibrary.cs" />
+    <Compile Include="MapImportClassToClassWithDelegates.cs" />
     <Compile Include="Vector4.cs" />
     <Compile Include="Matrix4.cs" />
     <Compile Include="Platform.cs" />
@@ -55,6 +69,7 @@
       <Name>CSharpUtils</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

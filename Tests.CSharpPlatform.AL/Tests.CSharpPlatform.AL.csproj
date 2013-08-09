@@ -62,10 +62,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CSharpPlatform.AL\CSharpPlatform.AL.csproj">
-      <Project>{40a74ee2-9d85-46ed-b751-fc46d915d714}</Project>
-      <Name>CSharpPlatform.AL</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CSharpPlatform\CSharpPlatform.csproj">
       <Project>{b4b107b5-030b-451c-8532-13b2306692c3}</Project>
       <Name>CSharpPlatform</Name>
