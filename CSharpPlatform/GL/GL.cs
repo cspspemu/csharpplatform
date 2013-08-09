@@ -47,10 +47,6 @@ namespace CSharpPlatform.GL
         // "libGL.so.2,libGL.so.1,libGL.so",
         // "../Frameworks/OpenGL.framework/OpenGL, /Library/Frameworks/OpenGL.framework/OpenGL, /System/Library/Frameworks/OpenGL.framework/OpenGL"
 
-		public static void Init()
-		{
-		}
-
 		static GL()
 		{
 			DynamicLibraryFactory.MapLibraryToType<GL>(DynamicLibraryFactory.CreateForLibrary(DllWindows, DllLinux, DllMac, DllAndroid));
@@ -59,8 +55,8 @@ namespace CSharpPlatform.GL
 		static public void LoadAll()
 		{
 			var DynamicLibraryOpengl = new DynamicLibraryOpengl();
-			DynamicLibraryOpengl.GetMethod("glActiveTexture");
-			//DynamicLibraryFactory.MapLibraryToType<GL>(DynamicLibraryOpengl);
+			//DynamicLibraryOpengl.GetMethod("glActiveTexture");
+			DynamicLibraryFactory.MapLibraryToType<GL>(DynamicLibraryOpengl);
 		}
 
 		public const int GL_ES_VERSION_2_0 = 1;
@@ -568,7 +564,8 @@ namespace CSharpPlatform.GL
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glGetActiveAttrib(GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, GLchar* name);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glGetActiveUniform(GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, GLchar* name);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glGetAttachedShaders(GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders);
-	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate int glGetAttribLocation(GLuint program, GLchar* name);
+	//[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate GLuint glGetAttribLocation(GLuint program, GLchar* name);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi), SuppressUnmanagedCodeSecurity] unsafe public delegate int glGetAttribLocation(GLuint program,  string name);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glGetBooleanv(GLenum pname, GLboolean* @params);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glGetBufferParameteriv(GLenum target, GLenum pname, GLint* @params);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate GLenum glGetError();
@@ -582,7 +579,7 @@ namespace CSharpPlatform.GL
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glGetShaderInfoLog(GLuint shader, GLsizei bufsize, GLsizei* length, GLchar* infolog);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glGetShaderSource(GLuint shader, GLsizei bufsize, GLsizei* length, GLchar* source);
-	[System.CLSCompliant(false)]
+	//[System.CLSCompliant(false)]
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate GLubyte* glGetString(GLenum name);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glGetTexParameterfv(GLenum target, GLenum pname, GLfloat* @params);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glGetTexParameteriv(GLenum target, GLenum pname, GLint* @params);

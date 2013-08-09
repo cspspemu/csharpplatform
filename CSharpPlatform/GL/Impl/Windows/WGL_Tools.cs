@@ -9,8 +9,11 @@ using System.Windows.Forms;
 
 namespace CSharpPlatform.GL.Impl
 {
-	unsafe public class WGL_Tools
+	unsafe public class WinOpenglContext : IOpenglContext
 	{
+		IntPtr DC;
+		IntPtr Context;
+
 		[DllImport("User32.dll", CharSet = CharSet.Auto)]
 		public static extern IntPtr GetWindowDC(IntPtr hWnd);
 
@@ -50,7 +53,7 @@ namespace CSharpPlatform.GL.Impl
 
 		private static bool class_registered = false;
 
-		static readonly IntPtr Instance = Marshal.GetHINSTANCE(typeof(WGL_Tools).Module);
+		static readonly IntPtr Instance = Marshal.GetHINSTANCE(typeof(WinOpenglContext).Module);
 		static readonly IntPtr ClassName = Marshal.StringToHGlobalAuto(Guid.NewGuid().ToString());
 		const ExtendedWindowStyle ParentStyleEx = ExtendedWindowStyle.WindowEdge | ExtendedWindowStyle.ApplicationWindow;
 
@@ -81,11 +84,15 @@ namespace CSharpPlatform.GL.Impl
 			return DefWindowProc(handle, message, wParam, lParam);
 		}
 
+		[SuppressUnmanagedCodeSecurity, DllImport("GDI32.dll", ExactSpelling = true, SetLastError = true)]
+		public extern static unsafe int ChoosePixelFormat(IntPtr hDc, PixelFormatDescriptor* pPfd);
+		[SuppressUnmanagedCodeSecurity, DllImport("GDI32.dll", ExactSpelling = true, SetLastError = true)]
+		public extern static unsafe Boolean SetPixelFormat(IntPtr hdc, int ipfd, PixelFormatDescriptor* ppfd);
 
-		static public IntPtr CreateContext()
+		static IntPtr SharedContext;
+
+		public WinOpenglContext()
 		{
-			GL.Init();
-
 			RegisterClassOnce();
 
 			WindowStyle style = WindowStyle.OverlappedWindow | WindowStyle.ClipChildren | WindowStyle.ClipSiblings;
@@ -119,26 +126,37 @@ namespace CSharpPlatform.GL.Impl
 			pfd.DepthBits = 16;
 			pfd.StencilBits = 8;
 
-			var pf = WGL.wglChoosePixelFormat(DC, &pfd);
+			var pf = ChoosePixelFormat(DC, &pfd);
 
-			Console.WriteLine("PF: {0}", pf);
-
-			if (!WGL.wglSetPixelFormat(DC, pf, &pfd))
+			if (!SetPixelFormat(DC, pf, &pfd))
 			{
 				Console.WriteLine("Error");
 			}
 
-            WGL.wglDescribePixelFormat(DC, pf, (uint)sizeof(PixelFormatDescriptor), &pfd);
-            ReleaseDC(DC, hWnd);
+			this.DC = DC;
+			this.Context = WGL.wglCreateContext(DC);
 
-			Console.WriteLine("PF: {0}", pfd.ToStringDefault());
+			if (SharedContext == IntPtr.Zero)
+			{
+				SharedContext = this.Context;
+			}
+			else
+			{
+				WGL.wglShareLists(SharedContext, this.Context);
+			}
 
-			var DC2 = GetDC(hWnd);
-			var Context = WGL.wglCreateContext(DC2);
+			MakeCurrent();
+			GL.LoadAll();
+		}
 
-			Console.WriteLine("Context: {0}", Context);
+		public void MakeCurrent()
+		{
+			WGL.wglMakeCurrent(DC, Context);
+		}
 
-			return Context;
+		public void SwapBuffers()
+		{
+			WGL.wglSwapBuffers(DC);
 		}
 	}
 

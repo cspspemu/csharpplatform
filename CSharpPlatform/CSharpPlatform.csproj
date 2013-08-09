@@ -50,8 +50,15 @@
     <Compile Include="GL\DynamicLibraryOpengl.cs" />
     <Compile Include="GL\GL.cs" />
     <Compile Include="GL\Impl\EGL.cs" />
-    <Compile Include="GL\Impl\WGL.cs" />
-    <Compile Include="GL\Impl\WGL_Tools.cs" />
+    <Compile Include="GL\IOpenglContext.cs" />
+    <Compile Include="GL\Impl\Windows\WGL.cs" />
+    <Compile Include="GL\Impl\Windows\WGL_Tools.cs" />
+    <Compile Include="GL\OpenglContextFactory.cs" />
+    <Compile Include="GL\Utils\GLAttribute.cs" />
+    <Compile Include="GL\Utils\GLBuffer.cs" />
+    <Compile Include="GL\Utils\GLDraw.cs" />
+    <Compile Include="GL\Utils\GLRenderTarget.cs" />
+    <Compile Include="GL\Utils\GLShader.cs" />
     <Compile Include="Intrinsics.cs" />
     <Compile Include="Library\DynamicLibraryFactory.cs" />
     <Compile Include="Library\Impl\DynamicLibraryPosix.cs" />
