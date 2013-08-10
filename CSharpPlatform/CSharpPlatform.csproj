@@ -37,7 +37,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -57,8 +56,10 @@
     <Compile Include="GL\Utils\GLAttribute.cs" />
     <Compile Include="GL\Utils\GLBuffer.cs" />
     <Compile Include="GL\Utils\GLDraw.cs" />
+    <Compile Include="GL\Utils\GLMatrix4.cs" />
     <Compile Include="GL\Utils\GLRenderTarget.cs" />
     <Compile Include="GL\Utils\GLShader.cs" />
+    <Compile Include="GL\Utils\GLVector4.cs" />
     <Compile Include="Intrinsics.cs" />
     <Compile Include="Library\DynamicLibraryFactory.cs" />
     <Compile Include="Library\Impl\DynamicLibraryPosix.cs" />

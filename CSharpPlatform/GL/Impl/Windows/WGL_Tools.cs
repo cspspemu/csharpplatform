@@ -1,11 +1,11 @@
-﻿using System;
+﻿using CSharpPlatform.Library;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace CSharpPlatform.GL.Impl
 {
@@ -91,30 +91,44 @@ namespace CSharpPlatform.GL.Impl
 
 		static IntPtr SharedContext;
 
-		public WinOpenglContext()
+		static public WinOpenglContext FromWindowHandle(IntPtr WindowHandle)
+		{
+			return FromDeviceContext(GetDC(WindowHandle));
+		}
+
+		static public WinOpenglContext FromDeviceContext(IntPtr DC)
+		{
+			return new WinOpenglContext(DC);
+		}
+
+		private WinOpenglContext(IntPtr DC)
 		{
 			RegisterClassOnce();
 
-			WindowStyle style = WindowStyle.OverlappedWindow | WindowStyle.ClipChildren | WindowStyle.ClipSiblings;
-			ExtendedWindowStyle ex_style = ParentStyleEx;
+			if (DC == IntPtr.Zero)
+			{
+				
+				WindowStyle style = WindowStyle.OverlappedWindow | WindowStyle.ClipChildren | WindowStyle.ClipSiblings;
+				ExtendedWindowStyle ex_style = ParentStyleEx;
 
-			Win32Rectangle rect = new Win32Rectangle();
-			rect.left = 0; rect.top = 0; rect.right = 512; rect.bottom = 272;
-			AdjustWindowRectEx(ref rect, style, false, ex_style);
+				Win32Rectangle rect = new Win32Rectangle();
+				rect.left = 0; rect.top = 0; rect.right = 512; rect.bottom = 272;
+				AdjustWindowRectEx(ref rect, style, false, ex_style);
 
-			IntPtr window_name = Marshal.StringToHGlobalAuto("Title");
-			IntPtr hWnd = CreateWindowEx(
-				ex_style, ClassName, window_name, style,
-				0, 0, 512, 272,
-				IntPtr.Zero, IntPtr.Zero, Instance, IntPtr.Zero);
+				IntPtr window_name = Marshal.StringToHGlobalAuto("Title");
+				IntPtr hWnd = CreateWindowEx(
+					ex_style, ClassName, window_name, style,
+					0, 0, 512, 272,
+					IntPtr.Zero, IntPtr.Zero, Instance, IntPtr.Zero);
 
-			if (hWnd == IntPtr.Zero)
-				throw new Exception(String.Format("Failed to create window. Error: {0}", Marshal.GetLastWin32Error()));
+				if (hWnd == IntPtr.Zero)
+					throw new Exception(String.Format("Failed to create window. Error: {0}", Marshal.GetLastWin32Error()));
 
-			//return handle;
-			//
-			//var Form = new Form();
-			var DC = GetDC(hWnd);
+				//return handle;
+				//
+				//var Form = new Form();
+				DC = GetDC(hWnd);
+			}
 
 			var pfd = new PixelFormatDescriptor();
 			pfd.Size = (short)sizeof(PixelFormatDescriptor);
@@ -130,7 +144,7 @@ namespace CSharpPlatform.GL.Impl
 
 			if (!SetPixelFormat(DC, pf, &pfd))
 			{
-				Console.WriteLine("Error");
+				Console.WriteLine("Error SetPixelFormat failed.");
 			}
 
 			this.DC = DC;
@@ -146,8 +160,24 @@ namespace CSharpPlatform.GL.Impl
 			}
 
 			MakeCurrent();
-			GL.LoadAll();
+			GL.LoadAllOnce();
+
+			DynamicLibraryFactory.MapLibraryToType<Extension>(new DynamicLibraryOpengl());
+
+			if (Extension.wglSwapIntervalEXT != null)
+			{
+				Extension.wglSwapIntervalEXT(0);
+			}
 		}
+
+		public class Extension
+		{
+            public static readonly wglSwapIntervalEXT wglSwapIntervalEXT;
+			public static readonly wglGetSwapIntervalEXT wglGetSwapIntervalEXT;
+		}
+
+		public delegate Boolean wglSwapIntervalEXT(int interval);
+		public delegate int wglGetSwapIntervalEXT();
 
 		public void MakeCurrent()
 		{
@@ -157,6 +187,13 @@ namespace CSharpPlatform.GL.Impl
 		public void SwapBuffers()
 		{
 			WGL.wglSwapBuffers(DC);
+		}
+
+		public void Dispose()
+		{
+			WGL.wglDeleteContext(this.Context);
+			this.Context = IntPtr.Zero;
+			//throw new NotImplementedException();
 		}
 	}
 

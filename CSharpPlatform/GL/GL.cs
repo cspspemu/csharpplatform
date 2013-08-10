@@ -52,11 +52,15 @@ namespace CSharpPlatform.GL
 			DynamicLibraryFactory.MapLibraryToType<GL>(DynamicLibraryFactory.CreateForLibrary(DllWindows, DllLinux, DllMac, DllAndroid));
 		}
 
-		static public void LoadAll()
+		static private bool LoadedAll = false;
+
+		static internal void LoadAllOnce()
 		{
-			var DynamicLibraryOpengl = new DynamicLibraryOpengl();
-			//DynamicLibraryOpengl.GetMethod("glActiveTexture");
-			DynamicLibraryFactory.MapLibraryToType<GL>(DynamicLibraryOpengl);
+			if (!LoadedAll)
+			{
+				LoadedAll = true;
+				DynamicLibraryFactory.MapLibraryToType<GL>(new DynamicLibraryOpengl());
+			}
 		}
 
 		public const int GL_ES_VERSION_2_0 = 1;
@@ -416,6 +420,14 @@ namespace CSharpPlatform.GL
 		static public readonly glGenerateMipmap glGenerateMipmap;
 		static public readonly glGenFramebuffers glGenFramebuffers;
 		static public readonly glGenRenderbuffers glGenRenderbuffers;
+
+		static public uint glGenTexture()
+		{
+			uint Texture;
+			glGenTextures(1, &Texture);
+			return Texture;
+		}
+
 		static public readonly glGenTextures glGenTextures;
 		static public readonly glGetActiveAttrib glGetActiveAttrib;
 		static public readonly glGetActiveUniform glGetActiveUniform;

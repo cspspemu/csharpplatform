@@ -38,12 +38,12 @@ namespace CSharpPlatform.GL.Utils
 			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
 			GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, Width, Height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, null);
 
-			//GL.glBindTexture(GL.GL_TEXTURE_2D, TextureDepthStencil);
-			//GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR);
-			//GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-			//GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-			//GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
-			//GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, PixelInternalFormat.DepthStencil, Width, Height, 0, PixelFormat.DepthStencil, PixelType.UnsignedInt248, EmptyDataPtr);
+			GL.glBindTexture(GL.GL_TEXTURE_2D, TextureDepth);
+			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR);
+			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
+			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
+			GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, Width, Height, 0, GL.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_SHORT, null);
 		}
 
 		static public GLRenderTarget Create(int Width, int Height)
@@ -83,7 +83,7 @@ namespace CSharpPlatform.GL.Utils
 			}
 		}
 
-		public void Bind()
+		public GLRenderTarget Bind()
 		{
 			if (FrameBuffer != 0)
 			{
@@ -97,6 +97,7 @@ namespace CSharpPlatform.GL.Utils
 			{
 				GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
 			}
+			return this;
 		}
 
 		public byte[] ReadPixels()

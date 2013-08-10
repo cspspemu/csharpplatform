@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,6 +21,19 @@ namespace CSharpPlatform.GL.Utils
 			fixed (uint* BufferPtr = &Buffer)
 			{
 				GL.glGenBuffers(1, BufferPtr);
+			}
+		}
+
+		public GLBuffer SetData<T>(T[] Data)
+		{
+			var Handle = GCHandle.Alloc(Data, GCHandleType.Pinned);
+			try
+			{
+				return SetData(Data.Length * Marshal.SizeOf(typeof(T)), Handle.AddrOfPinnedObject().ToPointer());
+			}
+			finally
+			{
+				Handle.Free();
 			}
 		}
 

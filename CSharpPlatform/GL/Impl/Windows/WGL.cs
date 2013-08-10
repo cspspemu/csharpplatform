@@ -36,6 +36,7 @@ namespace CSharpPlatform.GL.Impl
 		//[SuppressUnmanagedCodeSecurity, DllImport(GL.DllWindows, CharSet = CharSet.Auto)] public extern static unsafe Boolean wglUseFontOutlinesW(IntPtr hDC, Int32 first, Int32 count, Int32 listBase, float thickness, float deviation, Int32 fontMode, GlyphMetricsFloat* glyphMetrics);
 		[SuppressUnmanagedCodeSecurity, DllImport(GL.DllWindows, ExactSpelling = true, SetLastError = true)] public extern static Boolean wglMakeContextCurrentEXT(IntPtr hDrawDC, IntPtr hReadDC, IntPtr hglrc);
 		[SuppressUnmanagedCodeSecurity, DllImport(GL.DllWindows, ExactSpelling = true, SetLastError = true)] public extern static unsafe Boolean wglChoosePixelFormatEXT(IntPtr hdc, int* piAttribIList, Single* pfAttribFList, UInt32 nMaxFormats, [Out] int* piFormats, [Out] UInt32* nNumFormats);
+		
 	}
 
 	[StructLayout(LayoutKind.Sequential)]

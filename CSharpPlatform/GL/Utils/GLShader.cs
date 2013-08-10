@@ -33,15 +33,27 @@ namespace CSharpPlatform.GL.Utils
 
 		public GLAttribute GetAttribute(string Name)
 		{
-			var AttributeLocation = GL.glGetAttribLocation(Program, Name);
-			//GL.glGetVertexAttribfv
-			if (AttributeLocation == -1) throw(new Exception(String.Format("Can't find '{0}' attribute", Name)));
-			return new GLAttribute((uint)AttributeLocation);
+			return new GLAttribute(this, GL.glGetAttribLocation(Program, Name));
+		}
+
+		public GLUniform GetUniform(string Name)
+		{
+			return new GLUniform(this, GL.glGetUniformLocation(Program, Name));
 		}
 
 		private void Link()
 		{
 			GL.glLinkProgram(Program);
+		}
+
+		public bool IsUsing
+		{
+			get
+			{
+				int CurrentProgram;
+				GL.glGetIntegerv(GL.GL_CURRENT_PROGRAM, &CurrentProgram);
+				return CurrentProgram == Program;
+			}
 		}
 
 		public void Use()

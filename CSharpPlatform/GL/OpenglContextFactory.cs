@@ -9,9 +9,19 @@ namespace CSharpPlatform.GL
 {
 	public class OpenglContextFactory
 	{
-		static public IOpenglContext Create()
+		static public IOpenglContext CreateWindowless()
 		{
-			return new WinOpenglContext();
+			return CreateFromDeviceContext(IntPtr.Zero);
+		}
+
+		static public IOpenglContext CreateFromDeviceContext(IntPtr DeviceContext)
+		{
+			return WinOpenglContext.FromDeviceContext(DeviceContext);
+		}
+
+		static public IOpenglContext CreateFromWindowHandle(IntPtr WindowHandle)
+		{
+			return WinOpenglContext.FromWindowHandle(WindowHandle);
 		}
 	}
 }
