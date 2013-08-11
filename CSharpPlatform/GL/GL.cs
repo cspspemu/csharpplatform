@@ -421,12 +421,12 @@ namespace CSharpPlatform.GL
 		static public readonly glGenFramebuffers glGenFramebuffers;
 		static public readonly glGenRenderbuffers glGenRenderbuffers;
 
-		static public uint glGenTexture()
-		{
-			uint Texture;
-			glGenTextures(1, &Texture);
-			return Texture;
-		}
+		//static public uint glGenTexture()
+		//{
+		//	uint Texture;
+		//	glGenTextures(1, &Texture);
+		//	return Texture;
+		//}
 
 		static public readonly glGenTextures glGenTextures;
 		static public readonly glGetActiveAttrib glGetActiveAttrib;

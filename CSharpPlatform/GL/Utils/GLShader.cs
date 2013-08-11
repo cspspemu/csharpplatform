@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -7,23 +8,67 @@ using System.Threading.Tasks;
 
 namespace CSharpPlatform.GL.Utils
 {
+	public enum GLValueType : int
+	{
+		GL_BYTE = 0x1400,
+		GL_UNSIGNED_BYTE = 0x1401,
+		GL_SHORT = 0x1402,
+		GL_UNSIGNED_SHORT = 0x1403,
+		GL_INT = 0x1404,
+		GL_UNSIGNED_INT = 0x1405,
+		GL_FLOAT = 0x1406,
+		GL_FIXED = 0x140C,
+
+		GL_FLOAT_VEC2 = 0x8B50,
+		GL_FLOAT_VEC3 = 0x8B51,
+		GL_FLOAT_VEC4 = 0x8B52,
+		GL_INT_VEC2 = 0x8B53,
+		GL_INT_VEC3 = 0x8B54,
+		GL_INT_VEC4 = 0x8B55,
+		GL_BOOL = 0x8B56,
+		GL_BOOL_VEC2 = 0x8B57,
+		GL_BOOL_VEC3 = 0x8B58,
+		GL_BOOL_VEC4 = 0x8B59,
+		GL_FLOAT_MAT2 = 0x8B5A,
+		GL_FLOAT_MAT3 = 0x8B5B,
+		GL_FLOAT_MAT4 = 0x8B5C,
+		GL_SAMPLER_2D = 0x8B5E,
+		GL_SAMPLER_CUBE = 0x8B60,
+	}
+
+	public enum GLGeometry
+	{
+		GL_POINTS = 0x0000,
+		GL_LINES = 0x0001,
+		GL_LINE_LOOP = 0x0002,
+		GL_LINE_STRIP = 0x0003,
+		GL_TRIANGLES = 0x0004,
+		GL_TRIANGLE_STRIP = 0x0005,
+		GL_TRIANGLE_FAN = 0x0006,
+	}
 	unsafe public class GLShader : IDisposable
 	{
 		uint Program;
 		uint VertexShader;
 		uint FragmentShader;
 
+		[DebuggerHidden]
 		public GLShader(string VertexShaderSource, string FragmentShaderSource)
 		{
 			Initialize();
 
 			ShaderSource(VertexShader, VertexShaderSource);
 			GL.glCompileShader(VertexShader);
-			Console.WriteLine(GetShaderInfoLog(VertexShader));
+			var VertexShaderInfo = GetShaderInfoLog(VertexShader);
 
 			ShaderSource(FragmentShader, FragmentShaderSource);
 			GL.glCompileShader(FragmentShader);
-			Console.WriteLine(GetShaderInfoLog(FragmentShader));
+			var FragmentShaderInfo = GetShaderInfoLog(FragmentShader);
+
+			if (VertexShaderInfo.Length != 0 || FragmentShaderInfo.Length != 0)
+			{
+				throw (new Exception(String.Format("Shader ERROR: {0}, {1}", VertexShaderInfo, FragmentShaderInfo)));
+			}
 
 			GL.glAttachShader(Program, VertexShader);
 			GL.glAttachShader(Program, FragmentShader);
@@ -33,17 +78,69 @@ namespace CSharpPlatform.GL.Utils
 
 		public GLAttribute GetAttribute(string Name)
 		{
-			return new GLAttribute(this, GL.glGetAttribLocation(Program, Name));
+			return this._Attributes.GetOrDefault(Name, null);
 		}
 
 		public GLUniform GetUniform(string Name)
 		{
-			return new GLUniform(this, GL.glGetUniformLocation(Program, Name));
+			return this._Uniforms.GetOrDefault(Name, null);
 		}
 
 		private void Link()
 		{
 			GL.glLinkProgram(Program);
+			var ProgramInfo = GetProgramInfoLog(Program);
+			if (ProgramInfo.Length != 0)
+			{
+				throw (new Exception(String.Format("Shader ERROR: {0}", ProgramInfo)));
+			}
+
+			GetAllUniforms();
+			GetAllAttributes();
+		}
+
+		private readonly Dictionary<string, GLUniform> _Uniforms = new Dictionary<string, GLUniform>();
+		private readonly Dictionary<string, GLAttribute> _Attributes = new Dictionary<string, GLAttribute>();
+
+		public IEnumerable<GLUniform> Uniforms { get { return _Uniforms.Values; } }
+		public IEnumerable<GLAttribute> Attributes { get { return _Attributes.Values; } }
+
+		private void GetAllUniforms()
+		{
+			const int NameMaxSize = 1024;
+			var NameTemp = stackalloc byte[NameMaxSize];
+			int Total = -1;
+			GL.glGetProgramiv(Program, GL.GL_ACTIVE_UNIFORMS, &Total);
+			for (uint n = 0; n < Total; n++)
+			{
+				int name_len = -1, num = -1;
+				int type = GL.GL_ZERO;
+				GL.glGetActiveUniform(Program, n, NameMaxSize - 1, &name_len, &num, &type, NameTemp);
+				NameTemp[name_len] = 0;
+				var Name = Marshal.PtrToStringAnsi(new IntPtr(NameTemp));
+				int location = GL.glGetUniformLocation(Program, Name);
+				_Uniforms[Name] = new GLUniform(this, Name, location, num, (GLValueType)type);
+				//Console.WriteLine(Uniforms[Name]);
+			}
+		}
+
+		private void GetAllAttributes()
+		{
+			const int NameMaxSize = 1024;
+			var NameTemp = stackalloc byte[NameMaxSize];
+			int Total = -1;
+			GL.glGetProgramiv(Program, GL.GL_ACTIVE_ATTRIBUTES, &Total);
+			for (uint n = 0; n < Total; n++)
+			{
+				int name_len = -1, num = -1;
+				int type = GL.GL_ZERO;
+				GL.glGetActiveAttrib(Program, n, NameMaxSize - 1, &name_len, &num, &type, NameTemp);
+				NameTemp[name_len] = 0;
+				var Name = Marshal.PtrToStringAnsi(new IntPtr(NameTemp));
+				int location = GL.glGetAttribLocation(Program, Name);
+				_Attributes[Name] = new GLAttribute(this, Name, location, num, (GLValueType)type);
+				//Console.WriteLine(Attributes[Name]);
+			}
 		}
 
 		public bool IsUsing
@@ -90,6 +187,17 @@ namespace CSharpPlatform.GL.Utils
 			}
 		}
 
+		static private string GetProgramInfoLog(uint Program)
+		{
+			int Length;
+			var Data = new byte[1024];
+			fixed (byte* DataPtr = Data)
+			{
+				GL.glGetProgramInfoLog(Program, Data.Length, &Length, DataPtr);
+				return Marshal.PtrToStringAnsi(new IntPtr(DataPtr), Length);
+			}
+		}
+
 		public void Dispose()
 		{
 			GL.glDeleteProgram(Program);
@@ -98,6 +206,13 @@ namespace CSharpPlatform.GL.Utils
 			Program = 0;
 			VertexShader = 0;
 			FragmentShader = 0;
+		}
+
+		public void Draw(GLGeometry Geometry, int Offset, int Count, Action SetDataCallback)
+		{
+			Use();
+			SetDataCallback();
+			GL.glDrawArrays((int)Geometry, Offset, Count);
 		}
 	}
 }

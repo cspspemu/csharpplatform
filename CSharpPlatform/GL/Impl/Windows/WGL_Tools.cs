@@ -1,6 +1,7 @@
 ﻿using CSharpPlatform.Library;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -34,7 +35,7 @@ namespace CSharpPlatform.GL.Impl
 		public static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
 
 		[DllImport("user32.dll", EntryPoint = "AdjustWindowRectEx", CallingConvention = CallingConvention.StdCall, SetLastError = true), SuppressUnmanagedCodeSecurity]
-		internal static extern bool AdjustWindowRectEx(ref Win32Rectangle lpRect, WindowStyle dwStyle, bool bMenu, ExtendedWindowStyle dwExStyle);
+		internal static extern bool AdjustWindowRectEx(ref RECT lpRect, WindowStyle dwStyle, bool bMenu, ExtendedWindowStyle dwExStyle);
 
 		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 		internal static extern IntPtr CreateWindowEx(
@@ -47,7 +48,21 @@ namespace CSharpPlatform.GL.Impl
 			IntPtr HandleToParentWindow,
 			IntPtr Menu,
 			IntPtr Instance,
-			IntPtr Param);
+			IntPtr Param
+		);
+
+		[DllImport("Gdi32.dll")]
+		internal static extern IntPtr GetCurrentObject(
+			IntPtr hdc,
+			uint uObjectType
+		);
+
+		[DllImport("Gdi32.dll")]
+		internal static extern int GetObject(
+			IntPtr hgdiobj,
+			int cbBuffer,
+			void* lpvObject
+		);
 
 		const ClassStyle DefaultClassStyle = ClassStyle.OwnDC;
 
@@ -101,9 +116,14 @@ namespace CSharpPlatform.GL.Impl
 			return new WinOpenglContext(DC);
 		}
 
+		[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+		public static extern bool AdjustWindowRectEx(ref RECT lpRect, int dwStyle, bool bMenu, int dwExStyle);
+
 		private WinOpenglContext(IntPtr DC)
 		{
 			RegisterClassOnce();
+			int Width = 64;
+			int Height = 64;
 
 			if (DC == IntPtr.Zero)
 			{
@@ -111,18 +131,26 @@ namespace CSharpPlatform.GL.Impl
 				WindowStyle style = WindowStyle.OverlappedWindow | WindowStyle.ClipChildren | WindowStyle.ClipSiblings;
 				ExtendedWindowStyle ex_style = ParentStyleEx;
 
-				Win32Rectangle rect = new Win32Rectangle();
-				rect.left = 0; rect.top = 0; rect.right = 512; rect.bottom = 272;
+				var rect = new RECT()
+				{
+					left = 0,
+					top = 0,
+					right = Width,
+					bottom = Height,
+				};
 				AdjustWindowRectEx(ref rect, style, false, ex_style);
 
 				IntPtr window_name = Marshal.StringToHGlobalAuto("Title");
 				IntPtr hWnd = CreateWindowEx(
 					ex_style, ClassName, window_name, style,
-					0, 0, 512, 272,
-					IntPtr.Zero, IntPtr.Zero, Instance, IntPtr.Zero);
+					rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
+					IntPtr.Zero, IntPtr.Zero, Instance, IntPtr.Zero
+				);
 
 				if (hWnd == IntPtr.Zero)
+				{
 					throw new Exception(String.Format("Failed to create window. Error: {0}", Marshal.GetLastWin32Error()));
+				}
 
 				//return handle;
 				//
@@ -148,40 +176,91 @@ namespace CSharpPlatform.GL.Impl
 			}
 
 			this.DC = DC;
+
 			this.Context = WGL.wglCreateContext(DC);
+			//if (SharedContext != IntPtr.Zero)
+			//{
+			//	WGL.wglShareLists(SharedContext, this.Context);
+			//}
+			MakeCurrent();
+			DynamicLibraryFactory.MapLibraryToType<Extension>(new DynamicLibraryOpengl());
+			GL.LoadAllOnce();
+
+#if false
+			if (Extension.wglCreateContextAttribsARB != null)
+			{
+				ReleaseCurrent();
+				WGL.wglDeleteContext(this.Context);
+				fixed (int* AttribListPtr = new int[] { (int)ArbCreateContext.MajorVersion, 3, (int)ArbCreateContext.MinorVersion, 1, 0, 0 })
+				{
+					this.Context = Extension.wglCreateContextAttribsARB(DC, SharedContext, AttribListPtr);
+				}
+				if (this.Context == IntPtr.Zero) throw(new Exception("Error creating context"));
+				MakeCurrent();
+
+				Console.WriteLine("OpenGL Version: {0}", Marshal.PtrToStringAnsi(new IntPtr(GL.glGetString(GL.GL_VERSION))));
+				//Console.ReadKey();
+			}
+#endif
 
 			if (SharedContext == IntPtr.Zero)
 			{
 				SharedContext = this.Context;
 			}
-			else
-			{
-				WGL.wglShareLists(SharedContext, this.Context);
-			}
-
-			MakeCurrent();
-			GL.LoadAllOnce();
-
-			DynamicLibraryFactory.MapLibraryToType<Extension>(new DynamicLibraryOpengl());
 
 			if (Extension.wglSwapIntervalEXT != null)
 			{
 				Extension.wglSwapIntervalEXT(0);
 			}
+
+			//RECT clientRect;
+			//GetClientRect(hWnd, &clientRect);
 		}
+
+		public GLContextSize Size
+		{
+			get
+			{
+				var bitmapHeader = default(BITMAP);
+				var hBitmap = GetCurrentObject(DC, 7);
+				GetObject(hBitmap, sizeof(BITMAP), &bitmapHeader);
+				return new GLContextSize() { Width = (int)bitmapHeader.bmWidth, Height = (int)bitmapHeader.bmHeight };
+			}
+		}
+
+		public enum ArbCreateContext : int
+		{
+			DebugBit = 0x0001,
+			ForwardCompatibleBit = 0x0002,
+			MajorVersion = 0x2091,
+			MinorVersion = 0x2092,
+			LayerPlane = 0x2093,
+			Flags = 0x2094,
+			ErrorInvalidVersion = 0x2095,
+		}
+
 
 		public class Extension
 		{
-            public static readonly wglSwapIntervalEXT wglSwapIntervalEXT;
+			public static readonly wglCreateContextAttribsARB wglCreateContextAttribsARB;
+			public static readonly wglSwapIntervalEXT wglSwapIntervalEXT;
 			public static readonly wglGetSwapIntervalEXT wglGetSwapIntervalEXT;
 		}
 
+		public delegate IntPtr wglCreateContextAttribsARB(IntPtr hDC, IntPtr hShareContext, int* attribList);
 		public delegate Boolean wglSwapIntervalEXT(int interval);
 		public delegate int wglGetSwapIntervalEXT();
 
 		public void MakeCurrent()
 		{
 			WGL.wglMakeCurrent(DC, Context);
+			OpenglContextFactory.Current = this;
+		}
+
+		public void ReleaseCurrent()
+		{
+			WGL.wglMakeCurrent(DC, IntPtr.Zero);
+			OpenglContextFactory.Current = null;
 		}
 
 		public void SwapBuffers()
@@ -195,6 +274,32 @@ namespace CSharpPlatform.GL.Impl
 			this.Context = IntPtr.Zero;
 			//throw new NotImplementedException();
 		}
+	}
+
+	[DebuggerDisplay("{Width}x{Height}")]
+	public struct GLContextSize
+	{
+		public int Width;
+		public int Height;
+	}
+
+	public struct RECT
+	{
+		public int left;
+		public int top;
+		public int right;
+		public int bottom;
+	}
+
+	unsafe public struct BITMAP
+	{
+		public uint bmType;
+		public uint bmWidth;
+		public uint bmHeight;
+		public uint bmWidthBytes;
+		public uint bmPlanes;
+		public uint bmBitsPixel;
+		public void* bmBits;
 	}
 
 	[Flags]
@@ -358,26 +463,5 @@ namespace CSharpPlatform.GL.Impl
 		AltPlain = 16,            /* Available in CarbonLib 1.3 and later, and in Mac OS X 10.1 and later*/
 		Drawer = 20,            /* Available in Mac OS X 10.2 or later*/
 		All = 0xFFFFFFFFu    /* for use with GetFrontWindowOfClass, FindWindowOfClass, GetNextWindowOfClass*/
-	}
-
-	[StructLayout(LayoutKind.Sequential)]
-	public struct Win32Rectangle
-	{
-		/// <summary>
-		/// Specifies the x-coordinate of the upper-left corner of the rectangle.
-		/// </summary>
-		internal int left;
-		/// <summary>
-		/// Specifies the y-coordinate of the upper-left corner of the rectangle.
-		/// </summary>
-		internal int top;
-		/// <summary>
-		/// Specifies the x-coordinate of the lower-right corner of the rectangle.
-		/// </summary>
-		internal int right;
-		/// <summary>
-		/// Specifies the y-coordinate of the lower-right corner of the rectangle.
-		/// </summary>
-		internal int bottom;
 	}
 }

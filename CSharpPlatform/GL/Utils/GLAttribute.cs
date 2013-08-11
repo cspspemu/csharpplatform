@@ -7,26 +7,56 @@ using System.Threading.Tasks;
 
 namespace CSharpPlatform.GL.Utils
 {
-	unsafe public class GLUniform
+	abstract unsafe public class GLUniformAttribute
 	{
-		private GLShader Shader;
-		private int Location;
+		protected GLShader Shader;
+		protected string Name;
+		protected int Location;
+		public int ArrayLength { get; private set; }
+		protected GLValueType ValueType;
 
-		public GLUniform(GLShader Shader, int Location)
+		public unsafe GLUniformAttribute(GLShader Shader, string Name, int Location, int ArrayLength, GLValueType ValueType)
 		{
 			this.Shader = Shader;
+			this.Name = Name;
 			this.Location = Location;
+			this.ArrayLength = ArrayLength;
+			this.ValueType = ValueType;
 		}
 
 		public bool IsAvailable
 		{
-			get { return this.Location < 0; }
+			get { return this.Location >= 0; }
 		}
 
 		[DebuggerHidden]
-		private void CheckAvailable()
+		protected void CheckAvailable()
 		{
 			if (!Shader.IsUsing) throw (new Exception("Not using shader"));
+		}
+
+	}
+
+	sealed unsafe public class GLUniform : GLUniformAttribute
+	{
+		public unsafe GLUniform(GLShader Shader, string Name, int Location, int ArrayLength, GLValueType ValueType)
+			: base(Shader, Name, Location, ArrayLength, ValueType)
+		{
+		}
+
+		[DebuggerHidden]
+		public void Set(int Value)
+		{
+			CheckAvailable();
+			GL.glUniform1i(Location, Value);
+		}
+
+		[DebuggerHidden]
+		public void Set(GLTextureUnit GLTextureUnit)
+		{
+			GLTextureUnit.MakeCurrent();
+			if (this.ValueType != GLValueType.GL_SAMPLER_2D) throw(new Exception(String.Format("Trying to bind a TextureUnit to something not a Sampler2D : {0}", ValueType)));
+			Set(GLTextureUnit.Index);
 		}
 
 		[DebuggerHidden]
@@ -44,32 +74,18 @@ namespace CSharpPlatform.GL.Utils
 				GL.glUniformMatrix4fv(Location, Matrices.Length, false, Pointer);
 			});
 		}
+
+		public override string ToString()
+		{
+			return String.Format("GLUniform('{0}'({1}), {2}[{3}])", Name, Location, ValueType, ArrayLength);
+		}
 	}
 
-	unsafe public class GLAttribute
+	sealed unsafe public class GLAttribute : GLUniformAttribute
 	{
-		private GLShader Shader;
-		private int Location;
-
-		internal GLAttribute(GLShader Shader, int Location)
+		public unsafe GLAttribute(GLShader Shader, string Name, int Location, int ArrayLength, GLValueType ValueType)
+			: base(Shader, Name, Location, ArrayLength, ValueType)
 		{
-			this.Shader = Shader;
-			this.Location = Location;
-		}
-
-		public bool IsAvailable
-		{
-			get { return this.Location < 0; }
-		}
-
-		public int Size
-		{
-			get
-			{
-				int Out;
-				GL.glGetVertexAttribiv((uint)Location, GL.GL_VERTEX_ATTRIB_ARRAY_SIZE, &Out);
-				return Out;
-			}
 		}
 
 		private void Enable()
@@ -80,6 +96,11 @@ namespace CSharpPlatform.GL.Utils
 		private void Disable()
 		{
 			GL.glDisableVertexAttribArray((uint)Location);
+		}
+
+		public void UnsetData()
+		{
+			Disable();
 		}
 
 		public void SetData<TType>(GLBuffer Buffer, int ElementSize = 4, int Offset = 0, int Stride = 0, bool Normalize = false)
@@ -128,7 +149,7 @@ namespace CSharpPlatform.GL.Utils
 
 		public override string ToString()
 		{
-			return String.Format("GLAttribute({0}, Size:{1})", Location, Size);
+			return String.Format("GLAttribute('{0}'({1}), {2}[{3}])", Name, Location, ValueType, ArrayLength);
 		}
 	}
 }

@@ -9,17 +9,41 @@ namespace CSharpPlatform.GL.Utils
 	unsafe public class GLRenderTarget : IDisposable
 	{
 		private uint FrameBuffer;
-		private uint TextureColor;
-		private uint TextureDepth;
-		private uint TextureStencil;
-		private int Width;
-		private int Height;
+		private GLTexture TextureColor;
+		private GLTexture TextureDepth;
+		//private GLTexture TextureStencil;
+		private int _Width;
+		private int _Height;
 
-		static public readonly GLRenderTarget Default = new GLRenderTarget()
+		public int Width
 		{
-			Width = 512,
-			Height = 272,
-		};
+			get
+			{
+				//if (FrameBuffer == 0) return OpenglContextFactory.Current.Size.Width;
+				if (FrameBuffer == 0) return 64;
+				return _Width;
+			}
+		}
+
+		public int Height
+		{
+			get
+			{
+				//if (FrameBuffer == 0) return OpenglContextFactory.Current.Size.Height;
+				if (FrameBuffer == 0) return 64;
+				return _Height;
+			}
+		}
+
+		static public GLRenderTarget Default
+		{
+			get
+			{
+				var Render = new GLRenderTarget();
+				Render.Bind();
+				return Render;
+			}
+		}
 
 		private GLRenderTarget()
 		{
@@ -27,23 +51,10 @@ namespace CSharpPlatform.GL.Utils
 
 		private GLRenderTarget(int Width, int Height)
 		{
-			this.Width = Width;
-			this.Height = Height;
+			this._Width = Width;
+			this._Height = Height;
 			Initialize();
-
-			GL.glBindTexture(GL.GL_TEXTURE_2D, TextureColor);
-			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR);
-			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
-			GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, Width, Height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, null);
-
-			GL.glBindTexture(GL.GL_TEXTURE_2D, TextureDepth);
-			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR);
-			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
-			GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, Width, Height, 0, GL.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_SHORT, null);
+			Bind();
 		}
 
 		static public GLRenderTarget Create(int Width, int Height)
@@ -54,49 +65,35 @@ namespace CSharpPlatform.GL.Utils
 		private void Initialize()
 		{
 			fixed (uint* FrameBufferPtr = &FrameBuffer)
-			fixed (uint* TextureColorPtr = &TextureColor)
-			fixed (uint* TextureDepthPtr = &TextureDepth)
-			fixed (uint* TextureStencilPtr = &TextureStencil)
 			{
 				GL.glGenFramebuffers(1, FrameBufferPtr);
-				GL.glGenTextures(1, TextureColorPtr);
-				GL.glGenTextures(1, TextureDepthPtr);
-				GL.glGenTextures(1, TextureStencilPtr);
+				TextureColor = GLTexture.Create().SetFormat(TextureFormat.RGBA).SetSize(_Width, _Height);
+				TextureDepth = GLTexture.Create().SetFormat(TextureFormat.DEPTH).SetSize(_Width, _Height);
+				//TextureStencil = GLTexture.Create().SetFormatStencil(Width, Height);
 			}
 		}
 
 		public void Dispose()
 		{
 			fixed (uint* FrameBufferPtr = &FrameBuffer)
-			fixed (uint* TextureColorPtr = &TextureColor)
-			fixed (uint* TextureDepthPtr = &TextureDepth)
-			fixed (uint* TextureStencilPtr = &TextureStencil)
 			{
 				GL.glDeleteFramebuffers(1, FrameBufferPtr);
-				GL.glDeleteTextures(1, TextureColorPtr);
-				GL.glDeleteTextures(1, TextureDepthPtr);
-				GL.glDeleteTextures(1, TextureStencilPtr);
-				FrameBuffer = 0;
-				TextureColor = 0;
-				TextureDepth = 0;
-				TextureStencil = 0;
+				TextureColor.Dispose();
+				TextureDepth.Dispose();
+				//TextureStencil.Dispose();
 			}
 		}
 
 		public GLRenderTarget Bind()
 		{
+			GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, FrameBuffer);
 			if (FrameBuffer != 0)
 			{
-				GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, FrameBuffer);
-				GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, TextureColor, 0);
-				GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT, GL.GL_TEXTURE_2D, TextureDepth, 0);
-				GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_STENCIL_ATTACHMENT, GL.GL_TEXTURE_2D, TextureStencil, 0);
-				GL.glViewport(0, 0, Width, Height);
+				GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, TextureColor.Texture, 0);
+				GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT, GL.GL_TEXTURE_2D, TextureDepth.Texture, 0);
+				//GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_STENCIL_ATTACHMENT, GL.GL_TEXTURE_2D, TextureStencil.Texture, 0);
 			}
-			else
-			{
-				GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
-			}
+			GL.glViewport(0, 0, Width, Height);
 			return this;
 		}
 

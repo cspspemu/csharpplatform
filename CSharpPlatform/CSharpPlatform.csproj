@@ -59,6 +59,8 @@
     <Compile Include="GL\Utils\GLMatrix4.cs" />
     <Compile Include="GL\Utils\GLRenderTarget.cs" />
     <Compile Include="GL\Utils\GLShader.cs" />
+    <Compile Include="GL\Utils\GLTexture.cs" />
+    <Compile Include="GL\Utils\GLTextureUnit.cs" />
     <Compile Include="GL\Utils\GLVector4.cs" />
     <Compile Include="Intrinsics.cs" />
     <Compile Include="Library\DynamicLibraryFactory.cs" />

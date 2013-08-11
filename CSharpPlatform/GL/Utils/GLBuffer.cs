@@ -11,9 +11,14 @@ namespace CSharpPlatform.GL.Utils
 	{
 		uint Buffer;
 
-		public GLBuffer()
+		private GLBuffer()
 		{
 			Initialize();
+		}
+
+		static public GLBuffer Create()
+		{
+			return new GLBuffer();
 		}
 
 		private void Initialize()

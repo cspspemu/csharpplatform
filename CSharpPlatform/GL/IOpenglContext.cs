@@ -8,6 +8,7 @@ namespace CSharpPlatform.GL.Impl
 {
 	public interface IOpenglContext : IDisposable
 	{
+		GLContextSize Size { get; }
 		void MakeCurrent();
 		void SwapBuffers();
 	}
