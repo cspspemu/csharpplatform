@@ -60,13 +60,13 @@ namespace CSharpPlatform.GL.Utils
 		}
 
 		[DebuggerHidden]
-		public void Set(GLMatrix4 Matrix)
+		public void Set(Matrix4f Matrix)
 		{
 			Set(new[] { Matrix });
 		}
 
 		[DebuggerHidden]
-		public void Set(GLMatrix4[] Matrices)
+		public void Set(Matrix4f[] Matrices)
 		{
 			if (this.ValueType != GLValueType.GL_FLOAT_MAT4) throw (new InvalidOperationException("this.ValueType != GLValueType.GL_FLOAT_MAT4"));
 			if (this.ArrayLength != Matrices.Length) throw (new InvalidOperationException("this.ArrayLength != Matrices.Length"));
@@ -126,6 +126,7 @@ namespace CSharpPlatform.GL.Utils
 				Stride,
 				(void*)Offset
 			);
+			Buffer.Unbind();
 			Enable();
 		}
 

@@ -59,7 +59,7 @@ namespace CSharpPlatform.GL.Utils
 
 		public void Bind()
 		{
-			GL.glEnable(GL.GL_TEXTURE_2D);
+			//GL.glEnable(GL.GL_TEXTURE_2D);
 			GL.glBindTexture(GL.GL_TEXTURE_2D, this._Texture);
 		}
 
@@ -133,7 +133,6 @@ namespace CSharpPlatform.GL.Utils
 				switch (TextureFormat)
 				{
 					case TextureFormat.RGBA: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, 4, this.Width, this.Height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, DataPtr); break;
-					//case TextureFormat.RGBA: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, this.Width, this.Height, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, DataPtr); break;
 					case TextureFormat.DEPTH: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, this.Width, this.Height, 0, GL.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_SHORT, DataPtr); break;
 					default: throw (new InvalidOperationException("Unsupported " + TextureFormat));
 				}

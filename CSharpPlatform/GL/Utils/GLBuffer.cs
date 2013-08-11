@@ -58,6 +58,11 @@ namespace CSharpPlatform.GL.Utils
 			GL.glBindBuffer(GL.GL_ARRAY_BUFFER, Buffer);
 		}
 
+		public void Unbind()
+		{
+			GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+		}
+
 		public void Dispose()
 		{
 			fixed (uint* BufferPtr = &Buffer)

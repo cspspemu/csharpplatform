@@ -10,7 +10,7 @@ namespace Tests.CSharpPlatform
 		[TestMethod]
 		unsafe public void TestMatrix()
 		{
-			Console.WriteLine(Matrix4.Identity.Translate(2, 2, 0));
+			Console.WriteLine(Matrix4f.Identity.Translate(2, 2, 0));
 		}
 	}
 }
