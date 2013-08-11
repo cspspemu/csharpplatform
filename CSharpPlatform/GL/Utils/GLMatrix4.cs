@@ -16,10 +16,22 @@ namespace CSharpPlatform.GL.Utils
 		private GLVector4 Row2;
 		private GLVector4 Row3;
 
-		[TargetedPatchingOptOut("Performance critical to inline across NGen image boundaries")]
-		private int GetIndex(int Column, int Row)
+		public GLMatrix4(params double[] Arguments)
 		{
-			return Row * 4 + Column;
+			Row0 = default(GLVector4);
+			Row1 = default(GLVector4);
+			Row2 = default(GLVector4);
+			Row3 = default(GLVector4);
+			for (int n = 0; n < Arguments.Length; n++) this[n % 4, n / 4] = (float)Arguments[n];
+		}
+
+		public GLMatrix4(params float[] Arguments)
+		{
+			Row0 = default(GLVector4);
+			Row1 = default(GLVector4);
+			Row2 = default(GLVector4);
+			Row3 = default(GLVector4);
+			for (int n = 0; n < Arguments.Length; n++) this[n % 4, n / 4] = Arguments[n];
 		}
 
 		public float this[int Column, int Row]
@@ -120,6 +132,22 @@ namespace CSharpPlatform.GL.Utils
 		public void Dump()
 		{
 			for (int n = 0; n < 4; n++ ) Console.WriteLine("{0}", this.GetRow(n).ToString());
+		}
+
+		public void Ortho(double left, double right, double bottom, double top, double near, double far)
+		{
+			var tx = -((right + left) / (right - left));
+			var ty = -((top + bottom) / (top - bottom));
+			var tz = -((far + near) / (far - near));
+
+			this.Multiply(
+				new GLMatrix4(
+					2 / (right - left), 0, 0, tx,
+					0, 2 / (top - bottom), 0, ty,
+					0, 0, -2 / (far - near), tz,
+					0, 0, 0, 1
+				)
+			);
 		}
 	}
 }

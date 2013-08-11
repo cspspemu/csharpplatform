@@ -29,12 +29,16 @@ namespace CSharpPlatform.GL.Utils
 			}
 		}
 
-		public GLBuffer SetData<T>(T[] Data)
+		public GLBuffer SetData<T>(T[] Data, int Offset = 0, int Length = -1)
 		{
+			if (Length < 0) Length = Data.Length;
 			var Handle = GCHandle.Alloc(Data, GCHandleType.Pinned);
 			try
 			{
-				return SetData(Data.Length * Marshal.SizeOf(typeof(T)), Handle.AddrOfPinnedObject().ToPointer());
+				return SetData(
+					Length * Marshal.SizeOf(typeof(T)),
+					((byte*)Handle.AddrOfPinnedObject().ToPointer()) + Offset * Marshal.SizeOf(typeof(T))
+				);
 			}
 			finally
 			{

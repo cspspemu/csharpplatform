@@ -178,10 +178,14 @@ namespace CSharpPlatform.GL.Impl
 			this.DC = DC;
 
 			this.Context = WGL.wglCreateContext(DC);
-			//if (SharedContext != IntPtr.Zero)
-			//{
-			//	WGL.wglShareLists(SharedContext, this.Context);
-			//}
+			if (SharedContext != IntPtr.Zero)
+			{
+				//Console.WriteLine("SharedContext!"); Console.ReadKey();
+				if (!WGL.wglShareLists(SharedContext, this.Context))
+				{
+					throw(new InvalidOperationException("Can't share lists"));
+				}
+			}
 			MakeCurrent();
 			DynamicLibraryFactory.MapLibraryToType<Extension>(new DynamicLibraryOpengl());
 			GL.LoadAllOnce();
@@ -253,14 +257,20 @@ namespace CSharpPlatform.GL.Impl
 
 		public void MakeCurrent()
 		{
-			WGL.wglMakeCurrent(DC, Context);
-			OpenglContextFactory.Current = this;
+			if (!WGL.wglMakeCurrent(DC, Context))
+			{
+				throw(new Exception("Can't MakeCurrent"));
+			}
+			//OpenglContextFactory.Current = this;
 		}
 
 		public void ReleaseCurrent()
 		{
-			WGL.wglMakeCurrent(DC, IntPtr.Zero);
-			OpenglContextFactory.Current = null;
+			if (!WGL.wglMakeCurrent(DC, IntPtr.Zero))
+			{
+				throw (new Exception("Can't MakeCurrent"));
+			}
+			//OpenglContextFactory.Current = null;
 		}
 
 		public void SwapBuffers()

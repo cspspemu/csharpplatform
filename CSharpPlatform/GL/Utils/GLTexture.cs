@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CSharpUtils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -17,6 +18,7 @@ namespace CSharpPlatform.GL.Utils
 
 	unsafe public class GLTexture : IDisposable
 	{
+		private bool CapturedAndMustDispose;
 		private uint _Texture;
 		private int Width;
 		private int Height;
@@ -24,6 +26,13 @@ namespace CSharpPlatform.GL.Utils
 		private byte[] Data = null;
 
 		public uint Texture { get { return _Texture; } }
+
+		private GLTexture(uint _Texture)
+		{
+			this._Texture = _Texture;
+			this.CapturedAndMustDispose = false;
+			Bind();
+		}
 
 		private GLTexture()
 		{
@@ -35,9 +44,16 @@ namespace CSharpPlatform.GL.Utils
 			return new GLTexture();
 		}
 
+		public static GLTexture Wrap(uint Texture)
+		{
+			return new GLTexture(Texture);
+		}
+
+
 		private void Initialize()
 		{
 			fixed (uint* TexturePtr = &_Texture) GL.glGenTextures(1, TexturePtr);
+			this.CapturedAndMustDispose = true;
 			Bind();
 		}
 
@@ -63,6 +79,15 @@ namespace CSharpPlatform.GL.Utils
 		{
 			this.Width = Width;
 			this.Height = Height;
+			_SetTexture();
+			return this;
+		}
+
+		public GLTexture SetData(void* Pointer)
+		{
+			var Size = this.Width * this.Height * 4;
+			this.Data = new byte[Size];
+			Marshal.Copy(new IntPtr(Pointer), this.Data, 0, Size);
 			_SetTexture();
 			return this;
 		}
@@ -117,7 +142,10 @@ namespace CSharpPlatform.GL.Utils
 
 		public void Dispose()
 		{
-			fixed (uint* TexturePtr = &_Texture) GL.glDeleteTextures(1, TexturePtr);
+			if (this.CapturedAndMustDispose)
+			{
+				fixed (uint* TexturePtr = &_Texture) GL.glDeleteTextures(1, TexturePtr);
+			}
 			_Texture = 0;
 		}
 	}

@@ -10,6 +10,7 @@ namespace CSharpPlatform.GL.Impl
 	{
 		GLContextSize Size { get; }
 		void MakeCurrent();
+		void ReleaseCurrent();
 		void SwapBuffers();
 	}
 }

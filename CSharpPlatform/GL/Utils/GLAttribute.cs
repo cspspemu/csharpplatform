@@ -68,6 +68,8 @@ namespace CSharpPlatform.GL.Utils
 		[DebuggerHidden]
 		public void Set(GLMatrix4[] Matrices)
 		{
+			if (this.ValueType != GLValueType.GL_FLOAT_MAT4) throw (new InvalidOperationException("this.ValueType != GLValueType.GL_FLOAT_MAT4"));
+			if (this.ArrayLength != Matrices.Length) throw (new InvalidOperationException("this.ArrayLength != Matrices.Length"));
 			CheckAvailable();
 			Matrices[0].FixValues((Pointer) =>
 			{
@@ -126,6 +128,12 @@ namespace CSharpPlatform.GL.Utils
 			);
 			Enable();
 		}
+
+		//public void SetData(GLMatrix4 ModelViewProjectionMatrix)
+		//{
+		//	if (this.ValueType != GLValueType.GL_FLOAT_MAT4) throw (new InvalidOperationException("this.ValueType != GLValueType.GL_FLOAT_MAT4"));
+		//	if (this.ArrayLength != 1) throw (new InvalidOperationException("this.ArrayLength != 1"));
+		//}
 
 		//public void SetPointer(float* Data)
 		//{

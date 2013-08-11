@@ -9,8 +9,8 @@ namespace CSharpPlatform.GL.Utils
 	unsafe public class GLRenderTarget : IDisposable
 	{
 		private uint FrameBuffer;
-		private GLTexture TextureColor;
-		private GLTexture TextureDepth;
+		public GLTexture TextureColor { get; private set; }
+		public GLTexture TextureDepth { get; private set; }
 		//private GLTexture TextureStencil;
 		private int _Width;
 		private int _Height;

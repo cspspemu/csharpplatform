@@ -33,6 +33,7 @@ using EGLClientBuffer = System.IntPtr;
 using EGLNativeDisplayType = System.IntPtr;
 using EGLNativeWindowType = System.IntPtr;
 using EGLNativePixmapType = System.IntPtr;
+using System.Diagnostics;
 
 namespace CSharpPlatform.GL
 {
@@ -517,6 +518,25 @@ namespace CSharpPlatform.GL
 		static public readonly glVertexAttrib4fv glVertexAttrib4fv;
 		static public readonly glVertexAttribPointer glVertexAttribPointer;
 		static public readonly glViewport glViewport;
+
+		public static void ClearError()
+		{
+			while (GL.glGetError() != GL.GL_NO_ERROR) { }
+		}
+
+		[DebuggerHidden]
+		public static void CheckError()
+		{
+			try
+			{
+				var Error = GL.glGetError();
+				if (Error != GL.GL_NO_ERROR) throw (new Exception(String.Format("glError: 0x{0:X4}", Error)));
+			}
+			finally
+			{
+				ClearError();
+			}
+		}
 	}
 
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glActiveTexture(GLenum texture);

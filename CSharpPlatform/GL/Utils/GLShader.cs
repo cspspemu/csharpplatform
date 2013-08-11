@@ -59,6 +59,7 @@ namespace CSharpPlatform.GL.Utils
 
 			ShaderSource(VertexShader, VertexShaderSource);
 			GL.glCompileShader(VertexShader);
+			GL.CheckError();
 			var VertexShaderInfo = GetShaderInfoLog(VertexShader);
 
 			ShaderSource(FragmentShader, FragmentShaderSource);
@@ -160,9 +161,13 @@ namespace CSharpPlatform.GL.Utils
 
 		private void Initialize()
 		{
+			GL.ClearError();
 			Program = GL.glCreateProgram();
+			GL.CheckError();
 			VertexShader = GL.glCreateShader(GL.GL_VERTEX_SHADER);
+			GL.CheckError();
 			FragmentShader = GL.glCreateShader(GL.GL_FRAGMENT_SHADER);
+			GL.CheckError();
 		}
 
 		static private void ShaderSource(uint Shader, string Source)

@@ -61,7 +61,7 @@
     <Compile Include="GL\Utils\GLShader.cs" />
     <Compile Include="GL\Utils\GLTexture.cs" />
     <Compile Include="GL\Utils\GLTextureUnit.cs" />
-    <Compile Include="GL\Utils\GLVector4.cs" />
+    <Compile Include="GL\Utils\GLVector.cs" />
     <Compile Include="Intrinsics.cs" />
     <Compile Include="Library\DynamicLibraryFactory.cs" />
     <Compile Include="Library\Impl\DynamicLibraryPosix.cs" />
