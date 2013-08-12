@@ -79,12 +79,12 @@ namespace CSharpPlatform.GL.Utils
 
 		public GLAttribute GetAttribute(string Name)
 		{
-			return this._Attributes.GetOrDefault(Name, null);
+			return this._Attributes.GetOrDefault(Name, new GLAttribute(this, Name, -1, 0, GLValueType.GL_BYTE));
 		}
 
 		public GLUniform GetUniform(string Name)
 		{
-			return this._Uniforms.GetOrDefault(Name, null);
+			return this._Uniforms.GetOrDefault(Name, new GLUniform(this, Name, -1, 0, GLValueType.GL_BYTE));
 		}
 
 		private void Link()
@@ -218,6 +218,21 @@ namespace CSharpPlatform.GL.Utils
 			Use();
 			SetDataCallback();
 			GL.glDrawArrays((int)Geometry, Offset, Count);
+		}
+
+		public unsafe void BindUniformsAndAttributes(object Object)
+		{
+			foreach (var Field in Object.GetType().GetFields())
+			{
+				if (Field.FieldType == typeof(GLAttribute))
+				{
+					Field.SetValue(Object, this.GetAttribute(Field.Name));
+				}
+				else if (Field.FieldType == typeof(GLUniform))
+				{
+					Field.SetValue(Object, this.GetUniform(Field.Name));
+				}
+			}
 		}
 	}
 }

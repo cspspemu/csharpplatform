@@ -20,8 +20,8 @@ namespace CSharpPlatform.GL.Utils
 	{
 		private bool CapturedAndMustDispose;
 		private uint _Texture;
-		private int Width;
-		private int Height;
+		public int Width { get; private set; }
+		public int Height { get; private set; }
 		private TextureFormat TextureFormat = TextureFormat.RGBA;
 		private byte[] Data = null;
 
@@ -57,15 +57,16 @@ namespace CSharpPlatform.GL.Utils
 			Bind();
 		}
 
-		public void Bind()
+		public GLTexture Bind()
 		{
 			//GL.glEnable(GL.GL_TEXTURE_2D);
 			GL.glBindTexture(GL.GL_TEXTURE_2D, this._Texture);
+			return this;
 		}
 
 		static public void Unbind()
 		{
-			GL.glDisable(GL.GL_TEXTURE_2D);
+			//GL.glDisable(GL.GL_TEXTURE_2D);
 		}
 
 		public GLTexture SetFormat(TextureFormat TextureFormat)
@@ -146,6 +147,11 @@ namespace CSharpPlatform.GL.Utils
 				fixed (uint* TexturePtr = &_Texture) GL.glDeleteTextures(1, TexturePtr);
 			}
 			_Texture = 0;
+		}
+
+		public byte[] GetData()
+		{
+			return this.Data;
 		}
 	}
 }

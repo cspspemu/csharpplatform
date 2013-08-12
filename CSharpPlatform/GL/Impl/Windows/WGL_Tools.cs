@@ -122,8 +122,8 @@ namespace CSharpPlatform.GL.Impl
 		private WinOpenglContext(IntPtr DC)
 		{
 			RegisterClassOnce();
-			int Width = 64;
-			int Height = 64;
+			int Width = 512;
+			int Height = 512;
 
 			if (DC == IntPtr.Zero)
 			{
@@ -232,6 +232,11 @@ namespace CSharpPlatform.GL.Impl
 			}
 		}
 
+		public override string ToString()
+		{
+			return String.Format("WinOpenglContext({0}, {1}, {2}, {3})", this.DC, this.Context, SharedContext, Size);
+		}
+
 		public enum ArbCreateContext : int
 		{
 			DebugBit = 0x0001,
@@ -257,20 +262,26 @@ namespace CSharpPlatform.GL.Impl
 
 		public void MakeCurrent()
 		{
-			if (!WGL.wglMakeCurrent(DC, Context))
+			if (OpenglContextFactory.Current != this)
 			{
-				throw(new Exception("Can't MakeCurrent"));
+				if (!WGL.wglMakeCurrent(DC, Context))
+				{
+					throw (new Exception("Can't MakeCurrent"));
+				}
+				OpenglContextFactory.Current = this;
 			}
-			//OpenglContextFactory.Current = this;
 		}
 
 		public void ReleaseCurrent()
 		{
-			if (!WGL.wglMakeCurrent(DC, IntPtr.Zero))
+			if (OpenglContextFactory.Current != null)
 			{
-				throw (new Exception("Can't MakeCurrent"));
+				if (!WGL.wglMakeCurrent(DC, IntPtr.Zero))
+				{
+					throw (new Exception("Can't MakeCurrent"));
+				}
+				OpenglContextFactory.Current = null;
 			}
-			//OpenglContextFactory.Current = null;
 		}
 
 		public void SwapBuffers()
@@ -286,11 +297,16 @@ namespace CSharpPlatform.GL.Impl
 		}
 	}
 
-	[DebuggerDisplay("{Width}x{Height}")]
+	//[DebuggerDisplay("{Width}x{Height}")]
 	public struct GLContextSize
 	{
 		public int Width;
 		public int Height;
+
+		public override string ToString()
+		{
+			return String.Format("GLContextSize({0}x{1})", Width, Height);
+		}
 	}
 
 	public struct RECT

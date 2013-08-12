@@ -116,7 +116,7 @@ namespace CSharpPlatform
 			return Matrix4f.Create(Column(0), Column(1), Column(2), Column(3));
 		}
 
-		public Matrix4f Translate(float X, float Y, int Z)
+		public Matrix4f Translate(float X, float Y, float Z)
 		{
 			return StaticMultiply(this, Matrix4f.Create(
 				1, 0, 0, X,
@@ -126,7 +126,7 @@ namespace CSharpPlatform
 			));
 		}
 
-		public Matrix4f Scale(float X, float Y, int Z)
+		public Matrix4f Scale(float X, float Y, float Z)
 		{
 			return StaticMultiply(this, Matrix4f.Create(
 				X, 0, 0, 0,

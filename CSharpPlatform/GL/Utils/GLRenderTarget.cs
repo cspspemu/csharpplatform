@@ -8,7 +8,10 @@ namespace CSharpPlatform.GL.Utils
 {
 	unsafe public class GLRenderTarget : IDisposable
 	{
-		private uint FrameBuffer;
+		[ThreadStatic]
+		public static GLRenderTarget Current;
+
+		private uint FrameBufferId;
 		public GLTexture TextureColor { get; private set; }
 		public GLTexture TextureDepth { get; private set; }
 		//private GLTexture TextureStencil;
@@ -20,7 +23,7 @@ namespace CSharpPlatform.GL.Utils
 			get
 			{
 				//if (FrameBuffer == 0) return OpenglContextFactory.Current.Size.Width;
-				if (FrameBuffer == 0) return 64;
+				if (FrameBufferId == 0) return 64;
 				return _Width;
 			}
 		}
@@ -30,7 +33,7 @@ namespace CSharpPlatform.GL.Utils
 			get
 			{
 				//if (FrameBuffer == 0) return OpenglContextFactory.Current.Size.Height;
-				if (FrameBuffer == 0) return 64;
+				if (FrameBufferId == 0) return 64;
 				return _Height;
 			}
 		}
@@ -64,7 +67,7 @@ namespace CSharpPlatform.GL.Utils
 
 		private void Initialize()
 		{
-			fixed (uint* FrameBufferPtr = &FrameBuffer)
+			fixed (uint* FrameBufferPtr = &FrameBufferId)
 			{
 				GL.glGenFramebuffers(1, FrameBufferPtr);
 				TextureColor = GLTexture.Create().SetFormat(TextureFormat.RGBA).SetSize(_Width, _Height);
@@ -75,7 +78,7 @@ namespace CSharpPlatform.GL.Utils
 
 		public void Dispose()
 		{
-			fixed (uint* FrameBufferPtr = &FrameBuffer)
+			fixed (uint* FrameBufferPtr = &FrameBufferId)
 			{
 				GL.glDeleteFramebuffers(1, FrameBufferPtr);
 				TextureColor.Dispose();
@@ -86,14 +89,18 @@ namespace CSharpPlatform.GL.Utils
 
 		public GLRenderTarget Bind()
 		{
-			GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, FrameBuffer);
-			if (FrameBuffer != 0)
+			Current = this;
+			GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, FrameBufferId);
+			if (FrameBufferId != 0)
 			{
 				GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, TextureColor.Texture, 0);
 				GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT, GL.GL_TEXTURE_2D, TextureDepth.Texture, 0);
 				//GL.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, GL.GL_STENCIL_ATTACHMENT, GL.GL_TEXTURE_2D, TextureStencil.Texture, 0);
 			}
 			GL.glViewport(0, 0, Width, Height);
+			//GL.glClearColor(0, 0, 0, 1);
+			//GL.glClear(GL.GL_COLOR_CLEAR_VALUE);
+			//GL.glFlush();
 			return this;
 		}
 
@@ -105,6 +112,11 @@ namespace CSharpPlatform.GL.Utils
 				GL.glReadPixels(0, 0, Width, Height, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, DataPtr);
 			}
 			return Data;
+		}
+
+		public override string ToString()
+		{
+			return String.Format("GLRenderTarget({0}, Size({1}x{2}))", this.FrameBufferId, this.Width, this.Height);
 		}
 	}
 }

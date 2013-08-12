@@ -537,6 +537,24 @@ namespace CSharpPlatform.GL
 				ClearError();
 			}
 		}
+
+		public static bool EnableDisable(int EnableCap, bool EnableDisable)
+		{
+			if (EnableDisable)
+			{
+				GL.glEnable(EnableCap);
+			}
+			else
+			{
+				GL.glDisable(EnableCap);
+			}
+			return EnableDisable;
+		}
+
+		// REMOVE! Not available in OpenGL|ES
+		//[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+		//unsafe public delegate void glGetTexImage_(GLenum texture, GLint level, GLenum format, GLenum type, void* img);
+		//static public readonly glGetTexImage_ glGetTexImage;
 	}
 
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glActiveTexture(GLenum texture);

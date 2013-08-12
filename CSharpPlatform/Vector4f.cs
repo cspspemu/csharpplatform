@@ -67,6 +67,11 @@ namespace CSharpPlatform
 			return Vector;
 		}
 
+		public void FixValues(CallbackFloatPointer Callback)
+		{
+			fixed (float* Pointer = &this.X) Callback(Pointer);
+		}
+
 		//static public void Add(ref Vector4f Left, ref Vector4f Right, ref Vector4f Destination)
 		//{
 		//	for (int n = 0; n < 4; n++) Destination[n] = Left[n] + Right[n];

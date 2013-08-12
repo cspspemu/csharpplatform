@@ -9,8 +9,8 @@ namespace CSharpPlatform.GL
 {
 	public class OpenglContextFactory
 	{
-		//[ThreadStatic]
-		//public static IOpenglContext Current;
+		[ThreadStatic]
+		public static IOpenglContext Current;
 
 		static public IOpenglContext CreateWindowless()
 		{

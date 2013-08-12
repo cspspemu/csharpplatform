@@ -30,9 +30,15 @@ namespace CSharpPlatform.GL.Utils
 		}
 
 		[DebuggerHidden]
-		protected void CheckAvailable()
+		protected void PrepareUsing()
 		{
-			if (!Shader.IsUsing) throw (new Exception("Not using shader"));
+			//if (!Shader.IsUsing) throw (new Exception("Not using shader"));
+			Shader.Use();
+		}
+
+		public bool IsValid
+		{
+			get { return Location != -1; }
 		}
 
 	}
@@ -45,9 +51,16 @@ namespace CSharpPlatform.GL.Utils
 		}
 
 		[DebuggerHidden]
+		public void Set(bool Value)
+		{
+			Set(Value ? 1 : 0);
+		}
+
+		[DebuggerHidden]
 		public void Set(int Value)
 		{
-			CheckAvailable();
+			if (!IsValid) { Console.WriteLine("Trying to set value to undefined GLUniform: {0}", Name); return; }
+			PrepareUsing();
 			GL.glUniform1i(Location, Value);
 		}
 
@@ -60,6 +73,25 @@ namespace CSharpPlatform.GL.Utils
 		}
 
 		[DebuggerHidden]
+		public unsafe void Set(Vector4f Vector)
+		{
+			Set(new [] { Vector });
+		}
+
+		[DebuggerHidden]
+		public void Set(Vector4f[] Vectors)
+		{
+			if (!IsValid) { Console.WriteLine("Trying to set value to undefined GLUniform: {0}", Name);  return; }
+			if (this.ValueType != GLValueType.GL_FLOAT_VEC4) throw (new InvalidOperationException("this.ValueType != GLValueType.GL_FLOAT_VEC4"));
+			if (this.ArrayLength != Vectors.Length) throw (new InvalidOperationException("this.ArrayLength != Vectors.Length"));
+			PrepareUsing();
+			Vectors[0].FixValues((Pointer) =>
+			{
+				GL.glUniform4fv(Location, Vectors.Length, Pointer);
+			});
+		}
+
+		[DebuggerHidden]
 		public void Set(Matrix4f Matrix)
 		{
 			Set(new[] { Matrix });
@@ -68,9 +100,10 @@ namespace CSharpPlatform.GL.Utils
 		[DebuggerHidden]
 		public void Set(Matrix4f[] Matrices)
 		{
+			if (!IsValid) { Console.WriteLine("Trying to set value to undefined GLUniform: {0}", Name); return; }
 			if (this.ValueType != GLValueType.GL_FLOAT_MAT4) throw (new InvalidOperationException("this.ValueType != GLValueType.GL_FLOAT_MAT4"));
 			if (this.ArrayLength != Matrices.Length) throw (new InvalidOperationException("this.ArrayLength != Matrices.Length"));
-			CheckAvailable();
+			PrepareUsing();
 			Matrices[0].FixValues((Pointer) =>
 			{
 				GL.glUniformMatrix4fv(Location, Matrices.Length, false, Pointer);
@@ -107,7 +140,7 @@ namespace CSharpPlatform.GL.Utils
 
 		public void SetData<TType>(GLBuffer Buffer, int ElementSize = 4, int Offset = 0, int Stride = 0, bool Normalize = false)
 		{
-			if (!Shader.IsUsing) throw(new Exception("Not using shader"));
+			PrepareUsing();
 			int GlType = GL.GL_FLOAT;
 			var Type = typeof(TType);
 			if (Type == typeof(float)) GlType = GL.GL_FLOAT;

@@ -68,6 +68,7 @@
     <Compile Include="Library\Impl\DynamicLibraryWindows.cs" />
     <Compile Include="Library\IDynamicLibrary.cs" />
     <Compile Include="MapImportClassToClassWithDelegates.cs" />
+    <Compile Include="RectangleF.cs" />
     <Compile Include="Vector4f.cs" />
     <Compile Include="Matrix4f.cs" />
     <Compile Include="Platform.cs" />
