@@ -57,18 +57,27 @@ namespace CSharpPlatform.GL.Utils
 		{
 			Initialize();
 
+			int VertexShaderCompileStatus;
 			ShaderSource(VertexShader, VertexShaderSource);
 			GL.glCompileShader(VertexShader);
 			GL.CheckError();
+			GL.glGetShaderiv(VertexShader, GL.GL_COMPILE_STATUS, &VertexShaderCompileStatus);
 			var VertexShaderInfo = GetShaderInfoLog(VertexShader);
 
+			int FragmentShaderCompileStatus;
 			ShaderSource(FragmentShader, FragmentShaderSource);
 			GL.glCompileShader(FragmentShader);
+			GL.CheckError();
+			GL.glGetShaderiv(FragmentShader, GL.GL_COMPILE_STATUS, &FragmentShaderCompileStatus);
 			var FragmentShaderInfo = GetShaderInfoLog(FragmentShader);
 
-			if (VertexShaderInfo.Length != 0 || FragmentShaderInfo.Length != 0)
+			Console.Out.WriteLineColored(ConsoleColor.Blue, VertexShaderInfo);
+			Console.Out.WriteLineColored(ConsoleColor.Blue, FragmentShaderInfo);
+
+			if (VertexShaderCompileStatus == 0 || FragmentShaderCompileStatus == 0)
 			{
-				throw (new Exception(String.Format("Shader ERROR: {0}, {1}", VertexShaderInfo, FragmentShaderInfo)));
+				//throw (new Exception(String.Format("Shader ERROR (I): {0}, {1}", VertexShaderInfo, FragmentShaderInfo)));
+				Console.Error.WriteLineColored(ConsoleColor.Red, "Shader ERROR (I): {0}, {1}", VertexShaderInfo, FragmentShaderInfo);
 			}
 
 			GL.glAttachShader(Program, VertexShader);
@@ -84,16 +93,21 @@ namespace CSharpPlatform.GL.Utils
 
 		public GLUniform GetUniform(string Name)
 		{
+			if (this._Uniforms.ContainsKey(Name + "[0]")) Name = Name + "[0]";
 			return this._Uniforms.GetOrDefault(Name, new GLUniform(this, Name, -1, 0, GLValueType.GL_BYTE));
 		}
 
 		private void Link()
 		{
+			int LinkStatus;
 			GL.glLinkProgram(Program);
+			GL.glGetProgramiv(Program, GL.GL_LINK_STATUS, &LinkStatus);
 			var ProgramInfo = GetProgramInfoLog(Program);
-			if (ProgramInfo.Length != 0)
+
+			if (LinkStatus == 0)
 			{
-				throw (new Exception(String.Format("Shader ERROR: {0}", ProgramInfo)));
+				Console.Error.WriteLineColored(ConsoleColor.Red, "Shader ERROR (II): {0}", ProgramInfo);
+				//throw (new Exception(String.Format("Shader ERROR: {0}", ProgramInfo)));
 			}
 
 			GetAllUniforms();

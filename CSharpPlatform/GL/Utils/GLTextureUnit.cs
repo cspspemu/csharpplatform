@@ -71,11 +71,11 @@ namespace CSharpPlatform.GL.Utils
 		public GLTextureUnit MakeCurrent()
 		{
 			GL.glActiveTexture(GL.GL_TEXTURE0 + this.Index);
+			if (GLTexture != null) GLTexture.Bind();
 			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, (int)Min);
 			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, (int)Mag);
 			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, (int)WrapS);
 			GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, (int)WrapT);
-			if (GLTexture != null) GLTexture.Bind();
 			return this;
 		}
 	}

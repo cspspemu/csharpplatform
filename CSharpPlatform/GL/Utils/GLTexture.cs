@@ -57,8 +57,23 @@ namespace CSharpPlatform.GL.Utils
 			Bind();
 		}
 
+		public void BindTemp(Action Action)
+		{
+			var OldTexture = (uint)GL.glGetInteger(GL.GL_TEXTURE_BINDING_2D);
+			try
+			{
+				Bind();
+				Action();
+			}
+			finally
+			{
+				GL.glBindTexture(GL.GL_TEXTURE_2D, OldTexture);
+			}
+		}
+
 		public GLTexture Bind()
 		{
+			//GL.glGetIntegerv(GL.GL_TEXTURE_BINDING_2D, 
 			//GL.glEnable(GL.GL_TEXTURE_2D);
 			GL.glBindTexture(GL.GL_TEXTURE_2D, this._Texture);
 			return this;
@@ -135,6 +150,7 @@ namespace CSharpPlatform.GL.Utils
 				{
 					case TextureFormat.RGBA: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, 4, this.Width, this.Height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, DataPtr); break;
 					case TextureFormat.DEPTH: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, this.Width, this.Height, 0, GL.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_SHORT, DataPtr); break;
+					//case TextureFormat.STENCIL: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, this.Width, this.Height, 0, GL.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_SHORT, DataPtr); break;
 					default: throw (new InvalidOperationException("Unsupported " + TextureFormat));
 				}
 			}

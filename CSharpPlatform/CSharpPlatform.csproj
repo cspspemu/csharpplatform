@@ -37,6 +37,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,9 +50,11 @@
     <Compile Include="GL\DynamicLibraryOpengl.cs" />
     <Compile Include="GL\GL.cs" />
     <Compile Include="GL\Impl\EGL.cs" />
+    <Compile Include="GL\Impl\Linux\LinuxOpenglContext.cs" />
+    <Compile Include="GL\Impl\Linux\GLX.cs" />
     <Compile Include="GL\IOpenglContext.cs" />
     <Compile Include="GL\Impl\Windows\WGL.cs" />
-    <Compile Include="GL\Impl\Windows\WGL_Tools.cs" />
+    <Compile Include="GL\Impl\Windows\WinOpenglContext.cs" />
     <Compile Include="GL\OpenglContextFactory.cs" />
     <Compile Include="GL\Utils\GLAttribute.cs" />
     <Compile Include="GL\Utils\GLBuffer.cs" />
@@ -69,6 +72,7 @@
     <Compile Include="Library\IDynamicLibrary.cs" />
     <Compile Include="MapImportClassToClassWithDelegates.cs" />
     <Compile Include="RectangleF.cs" />
+    <Compile Include="UI\Dialog.cs" />
     <Compile Include="Vector4f.cs" />
     <Compile Include="Matrix4f.cs" />
     <Compile Include="Platform.cs" />

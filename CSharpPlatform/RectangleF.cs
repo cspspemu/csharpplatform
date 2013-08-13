@@ -40,5 +40,15 @@ namespace CSharpPlatform
 		{
 			return new RectangleF(Left, Top, Right - Left, Bottom - Top);
 		}
+
+		public RectangleF VFlip()
+		{
+			return FromCoords(this.Left, this.Bottom, this.Right, this.Top); 
+		}
+
+		public override string ToString()
+		{
+			return String.Format("RectangleF({0}, {1}, {2}, {3})", Left, Top, Width, Height);
+		}
 	}
 }

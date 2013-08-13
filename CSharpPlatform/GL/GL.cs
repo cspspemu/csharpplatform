@@ -40,7 +40,7 @@ namespace CSharpPlatform.GL
 	unsafe public partial class GL
 	{
 		internal const string DllWindows = "OpenGL32";
-		internal const string DllLinux = "libGL.so";
+		internal const string DllLinux = "libGL.so.1";
 		internal const string DllMac = "/System/Library/Frameworks/OpenGL.framework/OpenGL";
 		internal const string DllAndroid = "libopengl.so.1";
 
@@ -405,6 +405,15 @@ namespace CSharpPlatform.GL
 		static public readonly glDepthFunc glDepthFunc;
 		static public readonly glDepthMask glDepthMask;
 		static public readonly glDepthRangef glDepthRangef;
+
+		// IF NOT FOUND glDepthRangef
+		static public readonly glDepthRange glDepthRange;
+
+		static public void DepthRange(float near, float far)
+		{
+			if (glDepthRangef != null) glDepthRangef(near, far); else glDepthRange(near, far);
+		}
+
 		static public readonly glDetachShader glDetachShader;
 		static public readonly glDisable glDisable;
 		static public readonly glDisableVertexAttribArray glDisableVertexAttribArray;
@@ -428,6 +437,18 @@ namespace CSharpPlatform.GL
 		//	glGenTextures(1, &Texture);
 		//	return Texture;
 		//}
+
+		static public int glGetInteger(int Name)
+		{
+			int Out = 0;
+			glGetIntegerv(Name, &Out);
+			return Out;
+		}
+
+		static public string GetString(int Name)
+		{
+			return Marshal.PtrToStringAnsi(new IntPtr(glGetString(Name)));
+		}
 
 		static public readonly glGenTextures glGenTextures;
 		static public readonly glGetActiveAttrib glGetActiveAttrib;
@@ -555,6 +576,9 @@ namespace CSharpPlatform.GL
 		//[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
 		//unsafe public delegate void glGetTexImage_(GLenum texture, GLint level, GLenum format, GLenum type, void* img);
 		//static public readonly glGetTexImage_ glGetTexImage;
+
+		public const int GL_MAJOR_VERSION = 0x821B;
+		public const int GL_MINOR_VERSION = 0x821C;
 	}
 
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glActiveTexture(GLenum texture);
@@ -594,6 +618,7 @@ namespace CSharpPlatform.GL
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glDepthFunc(GLenum func);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glDepthMask(GLboolean flag);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glDepthRangef(GLclampf zNear, GLclampf zFar);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glDepthRange(double zNear, double zFar);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glDetachShader(GLuint program, GLuint shader);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glDisable(GLenum cap);
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity] unsafe public delegate void glDisableVertexAttribArray(GLuint index);

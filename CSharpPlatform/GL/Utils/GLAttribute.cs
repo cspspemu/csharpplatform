@@ -36,6 +36,18 @@ namespace CSharpPlatform.GL.Utils
 			Shader.Use();
 		}
 
+		protected bool ShowWarnings = true;
+
+		protected bool CheckValid()
+		{
+			if (!IsValid)
+			{
+				if (ShowWarnings) Console.WriteLine("WARNING: Trying to set value to undefined GLUniform: {0}, {1}", Name, ShowWarnings);
+				return false;
+			}
+			return true;
+		}
+
 		public bool IsValid
 		{
 			get { return Location != -1; }
@@ -53,13 +65,14 @@ namespace CSharpPlatform.GL.Utils
 		[DebuggerHidden]
 		public void Set(bool Value)
 		{
+			if (!CheckValid()) return;
 			Set(Value ? 1 : 0);
 		}
 
 		[DebuggerHidden]
 		public void Set(int Value)
 		{
-			if (!IsValid) { Console.WriteLine("Trying to set value to undefined GLUniform: {0}", Name); return; }
+			if (!CheckValid()) return;
 			PrepareUsing();
 			GL.glUniform1i(Location, Value);
 		}
@@ -67,6 +80,7 @@ namespace CSharpPlatform.GL.Utils
 		[DebuggerHidden]
 		public void Set(GLTextureUnit GLTextureUnit)
 		{
+			if (!CheckValid()) return;
 			GLTextureUnit.MakeCurrent();
 			if (this.ValueType != GLValueType.GL_SAMPLER_2D) throw(new Exception(String.Format("Trying to bind a TextureUnit to something not a Sampler2D : {0}", ValueType)));
 			Set(GLTextureUnit.Index);
@@ -75,13 +89,14 @@ namespace CSharpPlatform.GL.Utils
 		[DebuggerHidden]
 		public unsafe void Set(Vector4f Vector)
 		{
-			Set(new [] { Vector });
+			if (!CheckValid()) return;
+			Set(new[] { Vector });
 		}
 
 		[DebuggerHidden]
 		public void Set(Vector4f[] Vectors)
 		{
-			if (!IsValid) { Console.WriteLine("Trying to set value to undefined GLUniform: {0}", Name);  return; }
+			if (!CheckValid()) return;
 			if (this.ValueType != GLValueType.GL_FLOAT_VEC4) throw (new InvalidOperationException("this.ValueType != GLValueType.GL_FLOAT_VEC4"));
 			if (this.ArrayLength != Vectors.Length) throw (new InvalidOperationException("this.ArrayLength != Vectors.Length"));
 			PrepareUsing();
@@ -94,13 +109,14 @@ namespace CSharpPlatform.GL.Utils
 		[DebuggerHidden]
 		public void Set(Matrix4f Matrix)
 		{
+			if (!CheckValid()) return;
 			Set(new[] { Matrix });
 		}
 
 		[DebuggerHidden]
 		public void Set(Matrix4f[] Matrices)
 		{
-			if (!IsValid) { Console.WriteLine("Trying to set value to undefined GLUniform: {0}", Name); return; }
+			if (!CheckValid()) return;
 			if (this.ValueType != GLValueType.GL_FLOAT_MAT4) throw (new InvalidOperationException("this.ValueType != GLValueType.GL_FLOAT_MAT4"));
 			if (this.ArrayLength != Matrices.Length) throw (new InvalidOperationException("this.ArrayLength != Matrices.Length"));
 			PrepareUsing();
@@ -113,6 +129,12 @@ namespace CSharpPlatform.GL.Utils
 		public override string ToString()
 		{
 			return String.Format("GLUniform('{0}'({1}), {2}[{3}])", Name, Location, ValueType, ArrayLength);
+		}
+
+		public GLUniform NoWarning()
+		{
+			this.ShowWarnings = false;
+			return this;
 		}
 	}
 

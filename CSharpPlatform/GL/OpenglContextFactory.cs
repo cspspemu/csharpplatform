@@ -1,4 +1,6 @@
 ﻿using CSharpPlatform.GL.Impl;
+using CSharpPlatform.GL.Impl.Linux;
+using CSPspEmu.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,17 +16,17 @@ namespace CSharpPlatform.GL
 
 		static public IOpenglContext CreateWindowless()
 		{
-			return CreateFromDeviceContext(IntPtr.Zero);
-		}
-
-		static public IOpenglContext CreateFromDeviceContext(IntPtr DeviceContext)
-		{
-			return WinOpenglContext.FromDeviceContext(DeviceContext);
+			return CreateFromWindowHandle(IntPtr.Zero);
 		}
 
 		static public IOpenglContext CreateFromWindowHandle(IntPtr WindowHandle)
 		{
-			return WinOpenglContext.FromWindowHandle(WindowHandle);
+			switch (Platform.OS)
+			{
+				case OS.Windows: return WinOpenglContext.FromWindowHandle(WindowHandle);
+				case OS.Linux: return LinuxOpenglContext.FromWindowHandle(WindowHandle);
+				default: throw (new NotImplementedException(String.Format("Not implemented OS: {0}", Platform.OS)));
+			}
 		}
 	}
 }
