@@ -49,6 +49,8 @@
     <Compile Include="AL\ALC.cs" />
     <Compile Include="GL\DynamicLibraryOpengl.cs" />
     <Compile Include="GL\GL.cs" />
+    <Compile Include="GL\Impl\Android\AndroidOpenglContext.cs" />
+    <Compile Include="GL\Impl\Android\EGL.cs" />
     <Compile Include="GL\Impl\EGL.cs" />
     <Compile Include="GL\Impl\Linux\LinuxOpenglContext.cs" />
     <Compile Include="GL\Impl\Linux\GLX.cs" />

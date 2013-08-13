@@ -49,13 +49,14 @@ namespace CSharpPlatform.GL.Impl.Linux
 			int Width = 128, Height = 128;
 			int fbcount;
 			var visualAttributes = new List<int>();
-			//visualAttributes.AddRange(new[] { (int)GLXAttribute.RGBA });
-			//visualAttributes.AddRange(new[] { (int)GLXAttribute.RED_SIZE, 1 });
-			//visualAttributes.AddRange(new[] { (int)GLXAttribute.GREEN_SIZE, 1 });
-			//visualAttributes.AddRange(new[] { (int)GLXAttribute.BLUE_SIZE, 1 });
-			//visualAttributes.AddRange(new[] { (int)GLXAttribute.DOUBLEBUFFER, 1 });
-
-			//visualAttributes.AddRange(new[] { (int)GLXAttribute.RGBA });
+#if false
+			visualAttributes.AddRange(new[] { (int)GLXAttribute.RGBA });
+			visualAttributes.AddRange(new[] { (int)GLXAttribute.RED_SIZE, 1 });
+			visualAttributes.AddRange(new[] { (int)GLXAttribute.GREEN_SIZE, 1 });
+			visualAttributes.AddRange(new[] { (int)GLXAttribute.BLUE_SIZE, 1 });
+			visualAttributes.AddRange(new[] { (int)GLXAttribute.DOUBLEBUFFER, 1 });
+			visualAttributes.AddRange(new[] { (int)0, 0 });
+#else
 			visualAttributes.AddRange(new[] { (int)GLXAttribute.DRAWABLE_TYPE, 1 });
 			visualAttributes.AddRange(new[] { (int)GLXAttribute.RENDER_TYPE, 1 });
 			visualAttributes.AddRange(new[] { (int)GLXAttribute.RED_SIZE, 8 });
@@ -66,6 +67,7 @@ namespace CSharpPlatform.GL.Impl.Linux
 			visualAttributes.AddRange(new[] { (int)GLXAttribute.STENCIL_SIZE, 8 });
 			visualAttributes.AddRange(new[] { (int)GLXAttribute.DOUBLEBUFFER, 1 });
 			visualAttributes.AddRange(new[] { (int)0, 0 });
+#endif
 
 			Console.WriteLine("++++++++++++++++++++++++");
 
@@ -82,14 +84,18 @@ namespace CSharpPlatform.GL.Impl.Linux
 
 			//Console.WriteLine("{0}", GLX.ChooseVisual(Display, Screen, visualAttributes.ToArray()));
 
-			//Console.WriteLine("------------------------");
-			//var visinfo = (XVisualInfo*)GLX.ChooseVisual(Display, Screen, visualAttributes.ToArray()).ToPointer();
+			Console.WriteLine("------------------------");
+#if false
+			var visinfo = (XVisualInfo*)GLX.ChooseVisual(Display, Screen, visualAttributes.ToArray()).ToPointer();
 			//Console.WriteLine("------------------------");
 
 			Console.WriteLine("++++++++++++++++++++++++");
+#else
 
 			var fbconfigs = GLX.glXChooseFBConfig(Display, Screen, visualAttributes.ToArray(), out fbcount);
 			var visinfo = GLX.glXGetVisualFromFBConfig(Display, *fbconfigs);
+#endif
+			var root = XRootWindow(Display, visinfo->Screen);
 			
 
 			Console.WriteLine("++++++++++++++++++++++++");
@@ -101,12 +107,22 @@ namespace CSharpPlatform.GL.Impl.Linux
 
 			if (WindowHandle == IntPtr.Zero)
 			{
+				//var attr = default(XSetWindowAttributes);
+				///* window attributes */
+				//attr.background_pixel = 0;
+				//attr.border_pixel = 0;
+				//attr.colormap = XCreateColormap(dpy, root, visinfo->visual, AllocNone);
+				//attr.event_mask = StructureNotifyMask | ExposureMask | KeyPressMask;
+				//mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+				//
+				//win = XCreateWindow(dpy, root, 0, 0, width, height,
+				//			 0, visinfo->depth, InputOutput,
+				//			 visinfo->visual, mask, &attr);
 
 				var attr = default(XSetWindowAttributes);
-				//WindowHandle = XCreateSimpleWindow(Display, XRootWindow(Display, DefaultScreen), 0, 0, 128, 128, 0, 0, 0);
 				attr.background_pixel = IntPtr.Zero;
 				attr.border_pixel = IntPtr.Zero;
-				attr.colormap = XCreateColormap(Display, XRootWindow(Display, info.Screen), info.Visual, 0);
+				attr.colormap = XCreateColormap(Display, root, info.Visual, 0);
 				attr.event_mask = (IntPtr)(EventMask.StructureNotifyMask | EventMask.ExposureMask | EventMask.KeyPressMask);
 				//var mask = (IntPtr)(CreateWindowMask.CWBackPixel | CreateWindowMask.CWBorderPixel | CreateWindowMask.CWColormap | CreateWindowMask.CWEventMask);
 
@@ -116,7 +132,7 @@ namespace CSharpPlatform.GL.Impl.Linux
 
 				WindowHandle = XCreateWindow(
 					Display,
-					XRootWindow(Display, info.Screen),
+					root,
 					0, 0, Width, Height,
 					0,
 					info.Depth, (int)XWindowClass.InputOutput,
@@ -166,7 +182,9 @@ namespace CSharpPlatform.GL.Impl.Linux
 			}
 
 			MakeCurrent();
+			GL.LoadAllOnce();
 
+			Console.Out.WriteLineColored(ConsoleColor.Yellow, "VisualID:{0}", info.VisualID);
 			Console.Out.WriteLineColored(ConsoleColor.Yellow, "Display:{0:X8}", new UIntPtr(Display.ToPointer()).ToUInt64());
 			Console.Out.WriteLineColored(ConsoleColor.Yellow, "WindowHandle:{0:X8}", new UIntPtr(WindowHandle.ToPointer()).ToUInt64());
 			Console.Out.WriteLineColored(ConsoleColor.Yellow, "Context:{0:X8}", new UIntPtr(Context.ToPointer()).ToUInt64());

@@ -1,4 +1,5 @@
 ﻿using CSharpPlatform.GL.Impl;
+using CSharpPlatform.GL.Impl.Android;
 using CSharpPlatform.GL.Impl.Linux;
 using CSPspEmu.Core;
 using System;
@@ -25,6 +26,7 @@ namespace CSharpPlatform.GL
 			{
 				case OS.Windows: return WinOpenglContext.FromWindowHandle(WindowHandle);
 				case OS.Linux: return LinuxOpenglContext.FromWindowHandle(WindowHandle);
+				case OS.Android: return AndroidOpenglContext.FromWindowHandle(WindowHandle);
 				default: throw (new NotImplementedException(String.Format("Not implemented OS: {0}", Platform.OS)));
 			}
 		}
