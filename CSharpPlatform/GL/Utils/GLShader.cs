@@ -227,11 +227,21 @@ namespace CSharpPlatform.GL.Utils
 			FragmentShader = 0;
 		}
 
-		public void Draw(GLGeometry Geometry, int Offset, int Count, Action SetDataCallback)
+		public void Draw(GLGeometry Geometry, int Count, Action SetDataCallback, int Offset = 0)
 		{
 			Use();
 			SetDataCallback();
 			GL.glDrawArrays((int)Geometry, Offset, Count);
+		}
+
+		public void Draw(GLGeometry Geometry, int Count, uint[] Indices, Action SetDataCallback, int IndicesOffset = 0)
+		{
+			Use();
+			SetDataCallback();
+			fixed (uint* IndicesPtr = &Indices[IndicesOffset])
+			{
+				GL.glDrawElements((int)Geometry, Count, GL.GL_UNSIGNED_INT, (void*)IndicesPtr);
+			}
 		}
 
 		public unsafe void BindUniformsAndAttributes(object Object)
