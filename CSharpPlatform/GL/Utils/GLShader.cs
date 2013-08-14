@@ -234,7 +234,7 @@ namespace CSharpPlatform.GL.Utils
 			GL.glDrawArrays((int)Geometry, Offset, Count);
 		}
 
-		public void Draw(GLGeometry Geometry, int Count, uint[] Indices, Action SetDataCallback, int IndicesOffset = 0)
+		public void Draw(GLGeometry Geometry, uint[] Indices, int Count, Action SetDataCallback, int IndicesOffset = 0)
 		{
 			Use();
 			SetDataCallback();
