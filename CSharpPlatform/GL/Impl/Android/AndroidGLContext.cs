@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace CSharpPlatform.GL.Impl.Android
 {
-	public class AndroidOpenglContext : IOpenglContext
+	public class AndroidGLContext : IGLContext
 	{
 		private int Display;
 		private IntPtr WindowHandle;
 
-		public AndroidOpenglContext(IntPtr WindowHandle)
+		public AndroidGLContext(IntPtr WindowHandle)
 		{
 			this.WindowHandle = WindowHandle;
 			this.Display = EGL.eglGetDisplay(EGL.EGL_DEFAULT_DISPLAY);
@@ -19,9 +19,9 @@ namespace CSharpPlatform.GL.Impl.Android
 			throw new NotImplementedException();
 		}
 
-		static public AndroidOpenglContext FromWindowHandle(IntPtr WindowHandle)
+		static public AndroidGLContext FromWindowHandle(IntPtr WindowHandle)
 		{
-			return new AndroidOpenglContext(WindowHandle);
+			return new AndroidGLContext(WindowHandle);
 		}
 
 		public GLContextSize Size
@@ -29,17 +29,17 @@ namespace CSharpPlatform.GL.Impl.Android
 			get { throw new NotImplementedException(); }
 		}
 
-		public void MakeCurrent()
+		public IGLContext MakeCurrent()
 		{
 			throw new NotImplementedException();
 		}
 
-		public void ReleaseCurrent()
+		public IGLContext ReleaseCurrent()
 		{
 			throw new NotImplementedException();
 		}
 
-		public void SwapBuffers()
+		public IGLContext SwapBuffers()
 		{
 			throw new NotImplementedException();
 		}

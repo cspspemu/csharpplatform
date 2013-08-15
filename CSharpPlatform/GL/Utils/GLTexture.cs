@@ -14,6 +14,9 @@ namespace CSharpPlatform.GL.Utils
 		RGBA = 1,
 		DEPTH = 2,
 		STENCIL = 3,
+		RG = 4,
+		R = 5,
+		RGB = 6,
 	}
 
 	unsafe public class GLTexture : IDisposable
@@ -44,9 +47,9 @@ namespace CSharpPlatform.GL.Utils
 			return new GLTexture();
 		}
 
-		public static GLTexture Wrap(uint Texture)
+		public static GLTexture Wrap(uint Texture, int Width = 0, int Height = 0)
 		{
-			return new GLTexture(Texture);
+			return new GLTexture(Texture) { Width = Width, Height = Height };
 		}
 
 
@@ -136,23 +139,52 @@ namespace CSharpPlatform.GL.Utils
 		//	return this;
 		//}
 
+		const int GL_R8 = 0x8229;
+		const int GL_RED = 0x1903;
+
+		const int GL_RG = 0x8227;
+		const int GL_RG8 = 0x822B;
+
 		private void _SetTexture()
 		{
 			if (TextureFormat == Utils.TextureFormat.UNSET) return;
 			if (Width == 0 || Height == 0) return;
 
 			Bind();
+
+			//GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+			//GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+			//GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_TEXTURE_WRAP_S);
+			//GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_TEXTURE_WRAP_T);
+
 			fixed (byte* DataPtr = this.Data)
 			{
 				//Console.WriteLine("{0}:{1}: {2}x{3}: {4}", Texture, TextureFormat, Width, Height, new IntPtr(DataPtr));
 				//if (this.Data != null) Console.WriteLine(String.Join(",", this.Data));
 				switch (TextureFormat)
 				{
-					case TextureFormat.RGBA: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, 4, this.Width, this.Height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, DataPtr); break;
-					case TextureFormat.DEPTH: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, this.Width, this.Height, 0, GL.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_SHORT, DataPtr); break;
+					case TextureFormat.RGBA: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, 4, this.Width, this.Height, 0, GetOpenglFormat(), GL.GL_UNSIGNED_BYTE, DataPtr); break;
+					case TextureFormat.RGB: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, 3, this.Width, this.Height, 0, GetOpenglFormat(), GL.GL_UNSIGNED_BYTE, DataPtr); break;
+					case TextureFormat.RG: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, 0x822B/*GL.GL_RG8*/, this.Width, this.Height, 0, GetOpenglFormat(), GL.GL_UNSIGNED_BYTE, DataPtr); break;
+					case TextureFormat.R: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL_R8, this.Width, this.Height, 0, GetOpenglFormat(), GL.GL_UNSIGNED_BYTE, DataPtr); break;
+					case TextureFormat.DEPTH: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, this.Width, this.Height, 0, GetOpenglFormat(), GL.GL_UNSIGNED_SHORT, DataPtr); break;
 					//case TextureFormat.STENCIL: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, this.Width, this.Height, 0, GL.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_SHORT, DataPtr); break;
 					default: throw (new InvalidOperationException("Unsupported " + TextureFormat));
 				}
+			}
+		}
+
+		private int GetOpenglFormat()
+		{
+			switch (TextureFormat)
+			{
+				case TextureFormat.RGBA: return GL.GL_RGBA;
+				case TextureFormat.DEPTH: return GL.GL_DEPTH_COMPONENT;
+				case TextureFormat.RGB: return GL.GL_RGB;
+				case TextureFormat.RG: return GL_RG;
+				case TextureFormat.R: return GL_RED;
+				//case TextureFormat.STENCIL: GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, this.Width, this.Height, 0, GL.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_SHORT, DataPtr); break;
+				default: throw (new InvalidOperationException("Unsupported " + TextureFormat));
 			}
 		}
 
@@ -165,9 +197,20 @@ namespace CSharpPlatform.GL.Utils
 			_Texture = 0;
 		}
 
-		public byte[] GetData()
+		public byte[] GetDataFromCached()
 		{
 			return this.Data;
+		}
+
+		public byte[] GetDataFromGpu()
+		{
+			var Data = new byte[Width * Height * 4];
+			fixed (byte* DataPtr = Data)
+			{
+				Bind();
+				GL.glGetTexImage(GL.GL_TEXTURE_2D, 0, GetOpenglFormat(), GL.GL_UNSIGNED_BYTE, DataPtr);
+			}
+			return Data;
 		}
 	}
 }

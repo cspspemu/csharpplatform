@@ -34,11 +34,14 @@ using EGLNativeDisplayType = System.IntPtr;
 using EGLNativeWindowType = System.IntPtr;
 using EGLNativePixmapType = System.IntPtr;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace CSharpPlatform.GL
 {
 	unsafe public partial class GL
 	{
+		internal static readonly object Lock = new object();
+
 		internal const string DllWindows = "OpenGL32";
 		internal const string DllLinux = "libGL.so.1";
 		internal const string DllMac = "/System/Library/Frameworks/OpenGL.framework/OpenGL";
@@ -60,7 +63,28 @@ namespace CSharpPlatform.GL
 			if (!LoadedAll)
 			{
 				LoadedAll = true;
-				DynamicLibraryFactory.MapLibraryToType<GL>(new DynamicLibraryOpengl());
+				DynamicLibraryFactory.MapLibraryToType<GL>(new DynamicLibraryGL());
+			}
+		}
+
+		static private Dictionary<int, string> Constants;
+
+		static public string GetConstantString(int Value)
+		{
+			lock (Lock)
+			{
+				if (Constants == null)
+				{
+					Constants = new Dictionary<GLint, string>();
+					foreach (var Field in typeof(GL).GetFields(BindingFlags.Static | BindingFlags.Public))
+					{
+						if (Field.FieldType == typeof(int))
+						{
+							Constants[(int)Field.GetValue(null)] = Field.Name;
+						}
+					}
+				}
+				return Constants[Value];
 			}
 		}
 
@@ -573,9 +597,9 @@ namespace CSharpPlatform.GL
 		}
 
 		// REMOVE! Not available in OpenGL|ES
-		//[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
-		//unsafe public delegate void glGetTexImage_(GLenum texture, GLint level, GLenum format, GLenum type, void* img);
-		//static public readonly glGetTexImage_ glGetTexImage;
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+		unsafe public delegate void glGetTexImage_(GLenum texture, GLint level, GLenum format, GLenum type, void* img);
+		static public readonly glGetTexImage_ glGetTexImage;
 
 		public const int GL_MAJOR_VERSION = 0x821B;
 		public const int GL_MINOR_VERSION = 0x821C;

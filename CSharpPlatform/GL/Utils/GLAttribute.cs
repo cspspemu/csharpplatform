@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CSharpPlatform.GL.Utils
 {
-	abstract unsafe public class GLUniformAttribute
+	abstract unsafe public class GLUniformAttribute<T>
 	{
 		protected GLShader Shader;
 		protected string Name;
@@ -42,7 +42,7 @@ namespace CSharpPlatform.GL.Utils
 		{
 			if (!IsValid)
 			{
-				if (ShowWarnings) Console.WriteLine("WARNING: Trying to set value to undefined GLUniform: {0}, {1}", Name, ShowWarnings);
+				if (ShowWarnings) Console.WriteLine("WARNING: Trying to set value to undefined " + typeof(T).Name + ": {0}, {1}", Name, ShowWarnings);
 				return false;
 			}
 			return true;
@@ -53,9 +53,15 @@ namespace CSharpPlatform.GL.Utils
 			get { return Location != -1; }
 		}
 
+		public T NoWarning()
+		{
+			this.ShowWarnings = false;
+			return (T)(object)this;
+		}
 	}
 
-	sealed unsafe public class GLUniform : GLUniformAttribute
+
+	sealed unsafe public class GLUniform : GLUniformAttribute<GLUniform>
 	{
 		public unsafe GLUniform(GLShader Shader, string Name, int Location, int ArrayLength, GLValueType ValueType)
 			: base(Shader, Name, Location, ArrayLength, ValueType)
@@ -130,15 +136,9 @@ namespace CSharpPlatform.GL.Utils
 		{
 			return String.Format("GLUniform('{0}'({1}), {2}[{3}])", Name, Location, ValueType, ArrayLength);
 		}
-
-		public GLUniform NoWarning()
-		{
-			this.ShowWarnings = false;
-			return this;
-		}
 	}
 
-	sealed unsafe public class GLAttribute : GLUniformAttribute
+	sealed unsafe public class GLAttribute : GLUniformAttribute<GLAttribute>
 	{
 		public unsafe GLAttribute(GLShader Shader, string Name, int Location, int ArrayLength, GLValueType ValueType)
 			: base(Shader, Name, Location, ArrayLength, ValueType)
@@ -162,6 +162,7 @@ namespace CSharpPlatform.GL.Utils
 
 		public void SetData<TType>(GLBuffer Buffer, int ElementSize = 4, int Offset = 0, int Stride = 0, bool Normalize = false)
 		{
+			if (!CheckValid()) return;
 			PrepareUsing();
 			int GlType = GL.GL_FLOAT;
 			var Type = typeof(TType);

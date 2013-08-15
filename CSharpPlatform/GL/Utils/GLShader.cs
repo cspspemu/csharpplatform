@@ -71,8 +71,8 @@ namespace CSharpPlatform.GL.Utils
 			GL.glGetShaderiv(FragmentShader, GL.GL_COMPILE_STATUS, &FragmentShaderCompileStatus);
 			var FragmentShaderInfo = GetShaderInfoLog(FragmentShader);
 
-			Console.Out.WriteLineColored(ConsoleColor.Blue, VertexShaderInfo);
-			Console.Out.WriteLineColored(ConsoleColor.Blue, FragmentShaderInfo);
+			if (!String.IsNullOrEmpty(VertexShaderInfo)) Console.Out.WriteLineColored(ConsoleColor.Blue, "{0}", VertexShaderInfo);
+			if (!String.IsNullOrEmpty(FragmentShaderInfo)) Console.Out.WriteLineColored(ConsoleColor.Blue, "{0}", FragmentShaderInfo);
 
 			if (VertexShaderCompileStatus == 0 || FragmentShaderCompileStatus == 0)
 			{
@@ -82,6 +82,8 @@ namespace CSharpPlatform.GL.Utils
 
 			GL.glAttachShader(Program, VertexShader);
 			GL.glAttachShader(Program, FragmentShader);
+			GL.glDeleteShader(VertexShader);
+			GL.glDeleteShader(FragmentShader);
 
 			Link();
 		}
@@ -220,8 +222,6 @@ namespace CSharpPlatform.GL.Utils
 		public void Dispose()
 		{
 			GL.glDeleteProgram(Program);
-			GL.glDeleteShader(VertexShader);
-			GL.glDeleteShader(FragmentShader);
 			Program = 0;
 			VertexShader = 0;
 			FragmentShader = 0;

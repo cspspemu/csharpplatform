@@ -22,20 +22,30 @@ namespace CSharpPlatform.GL.Utils
 	public class GLTextureUnit
 	{
 		internal int Index;
-		internal GLTexture GLTexture;
+		public GLTexture GLTexture { get; private set; }
 		internal GLWrap WrapS = GLWrap.ClampToEdge;
 		internal GLWrap WrapT = GLWrap.ClampToEdge;
 		internal GLScaleFilter Min = GLScaleFilter.Linear;
 		internal GLScaleFilter Mag = GLScaleFilter.Linear;
 
-		private GLTextureUnit(int Index)
+		private GLTextureUnit()
+		{
+		}
+
+		public GLTextureUnit SetIndex(int Index)
 		{
 			this.Index = Index;
+			return this;
+		}
+
+		static public GLTextureUnit Create()
+		{
+			return new GLTextureUnit();
 		}
 
 		static public GLTextureUnit CreateAtIndex(int Index)
 		{
-			return new GLTextureUnit(Index);
+			return Create().SetIndex(Index);
 		}
 
 		public GLTextureUnit SetTexture(GLTexture GLTexture)

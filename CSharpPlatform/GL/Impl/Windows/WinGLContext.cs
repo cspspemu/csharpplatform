@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CSharpPlatform.GL.Impl
 {
-	unsafe public class WinOpenglContext : IOpenglContext
+	unsafe public class WinGLContext : IGLContext
 	{
 		IntPtr DC;
 		IntPtr Context;
@@ -68,7 +68,7 @@ namespace CSharpPlatform.GL.Impl
 
 		private static bool class_registered = false;
 
-		static readonly IntPtr Instance = Marshal.GetHINSTANCE(typeof(WinOpenglContext).Module);
+		static readonly IntPtr Instance = Marshal.GetHINSTANCE(typeof(WinGLContext).Module);
 		static readonly IntPtr ClassName = Marshal.StringToHGlobalAuto(Guid.NewGuid().ToString());
 		const ExtendedWindowStyle ParentStyleEx = ExtendedWindowStyle.WindowEdge | ExtendedWindowStyle.ApplicationWindow;
 
@@ -106,9 +106,9 @@ namespace CSharpPlatform.GL.Impl
 
 		static IntPtr SharedContext;
 
-		static public WinOpenglContext FromWindowHandle(IntPtr WindowHandle)
+		static public WinGLContext FromWindowHandle(IntPtr WindowHandle)
 		{
-			return new WinOpenglContext(WindowHandle);
+			return new WinGLContext(WindowHandle);
 		}
 
 		[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
@@ -116,7 +116,7 @@ namespace CSharpPlatform.GL.Impl
 
 		IntPtr hWnd;
 
-		private WinOpenglContext(IntPtr WinHandle)
+		private WinGLContext(IntPtr WinHandle)
 		{
 			this.hWnd = WinHandle;
 			RegisterClassOnce();
@@ -159,6 +159,7 @@ namespace CSharpPlatform.GL.Impl
 			pfd.Flags = PixelFormatDescriptorFlags.DRAW_TO_WINDOW | PixelFormatDescriptorFlags.SUPPORT_OPENGL | PixelFormatDescriptorFlags.DOUBLEBUFFER;
 			pfd.LayerType = 0;
 			pfd.PixelType = PixelType.RGBA; // PFD_TYPE_RGBA
+			//pfd.ColorBits = 32;
 			pfd.ColorBits = 24;
 			pfd.DepthBits = 16;
 			pfd.StencilBits = 8;
@@ -171,8 +172,6 @@ namespace CSharpPlatform.GL.Impl
 				Console.WriteLine("Error SetPixelFormat failed.");
 			}
 
-			this.DC = DC;
-
 			this.Context = WGL.wglCreateContext(DC);
 			if (SharedContext != IntPtr.Zero)
 			{
@@ -184,7 +183,7 @@ namespace CSharpPlatform.GL.Impl
 			}
 			MakeCurrent();
 			Console.Out.WriteLineColored(ConsoleColor.Yellow, "Version:{0}.{1}", GL.glGetInteger(GL.GL_MAJOR_VERSION), GL.glGetInteger(GL.GL_MINOR_VERSION));
-			DynamicLibraryFactory.MapLibraryToType<Extension>(new DynamicLibraryOpengl());
+			DynamicLibraryFactory.MapLibraryToType<Extension>(new DynamicLibraryGL());
 			GL.LoadAllOnce();
 
 #if false
@@ -257,33 +256,36 @@ namespace CSharpPlatform.GL.Impl
 		public delegate Boolean wglSwapIntervalEXT(int interval);
 		public delegate int wglGetSwapIntervalEXT();
 
-		public void MakeCurrent()
+		public IGLContext MakeCurrent()
 		{
-			if (OpenglContextFactory.Current != this)
+			if (GLContextFactory.Current != this)
 			{
 				if (!WGL.wglMakeCurrent(DC, Context))
 				{
 					throw (new Exception("Can't MakeCurrent"));
 				}
-				OpenglContextFactory.Current = this;
+				GLContextFactory.Current = this;
 			}
+			return this;
 		}
 
-		public void ReleaseCurrent()
+		public IGLContext ReleaseCurrent()
 		{
-			if (OpenglContextFactory.Current != null)
+			if (GLContextFactory.Current != null)
 			{
 				if (!WGL.wglMakeCurrent(DC, IntPtr.Zero))
 				{
 					throw (new Exception("Can't MakeCurrent"));
 				}
-				OpenglContextFactory.Current = null;
+				GLContextFactory.Current = null;
 			}
+			return this;
 		}
 
-		public void SwapBuffers()
+		public IGLContext SwapBuffers()
 		{
 			WGL.wglSwapBuffers(DC);
+			return this;
 		}
 
 		public void Dispose()

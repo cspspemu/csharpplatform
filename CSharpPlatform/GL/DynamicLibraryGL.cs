@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CSharpPlatform.GL
 {
-	class DynamicLibraryOpengl : IDynamicLibrary
+	class DynamicLibraryGL : IDynamicLibrary
 	{
 		public IntPtr GetMethod(string Name)
 		{

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CSharpPlatform.GL.Impl.Linux
 {
-	unsafe public class LinuxOpenglContext : IOpenglContext
+	unsafe public class LinuxGLContext : IGLContext
 	{
 		static private Object Lock = new Object();
 		static public IntPtr DefaultDisplay;
@@ -30,20 +30,20 @@ namespace CSharpPlatform.GL.Impl.Linux
 		[DllImport("libX11")] public static extern IntPtr XGetVisualInfo(IntPtr display, IntPtr vinfo_mask, ref XVisualInfo template, out int nitems);
 
 
-		public static IOpenglContext FromWindowHandle(IntPtr WindowHandle)
+		public static IGLContext FromWindowHandle(IntPtr WindowHandle)
 		{
 			lock (Lock)
 			{
-				return new LinuxOpenglContext(WindowHandle);
+				return new LinuxGLContext(WindowHandle);
 			}
 		}
 
-		static LinuxOpenglContext()
+		static LinuxGLContext()
 		{
 			XInitThreads();
 		}
 
-		private LinuxOpenglContext(IntPtr WindowHandle)
+		private LinuxGLContext(IntPtr WindowHandle)
 		{
 			Console.Out.WriteLineColored(ConsoleColor.Yellow, "InitialWindowHandle:{0:X8}", new UIntPtr(WindowHandle.ToPointer()).ToUInt64());
 			int Width = 128, Height = 128;
@@ -200,24 +200,27 @@ namespace CSharpPlatform.GL.Impl.Linux
 			get { return new GLContextSize() { Width = 0, Height = 0 }; }
 		}
 
-		public void MakeCurrent()
+		public IGLContext MakeCurrent()
 		{
 			if (!GLX.glXMakeCurrent(Display, WindowHandle, Context))
 			{
 				GL.CheckError();
 				Console.Error.WriteLineColored(ConsoleColor.Red, "glXMakeCurrent failed");
 			}
+			return this;
 		}
 
-		public void ReleaseCurrent()
+		public IGLContext ReleaseCurrent()
 		{
 			GLX.glXMakeCurrent(Display, IntPtr.Zero, IntPtr.Zero);
 			GL.CheckError();
+			return this;
 		}
 
-		public void SwapBuffers()
+		public IGLContext SwapBuffers()
 		{
 			GLX.glXSwapBuffers(Display, WindowHandle);
+			return this;
 		}
 
 		public void Dispose()

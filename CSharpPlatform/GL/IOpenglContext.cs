@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace CSharpPlatform.GL.Impl
 {
-	public interface IOpenglContext : IDisposable
+	public interface IGLContext : IDisposable
 	{
 		GLContextSize Size { get; }
-		void MakeCurrent();
-		void ReleaseCurrent();
-		void SwapBuffers();
+		IGLContext MakeCurrent();
+		IGLContext ReleaseCurrent();
+		IGLContext SwapBuffers();
 	}
 }
