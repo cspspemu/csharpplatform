@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace CSharpPlatform.GL.Utils
 	unsafe public class GLRenderTarget : IDisposable
 	{
 		[ThreadStatic]
-		public static GLRenderTarget Current;
+		public static GLRenderTarget Current = GLRenderTargetScreen.Default;
 
 		protected uint FrameBufferId;
 		public GLTexture TextureColor { get; private set; }
@@ -33,6 +34,36 @@ namespace CSharpPlatform.GL.Utils
 
 		protected GLRenderTarget()
 		{
+		}
+
+		/// <summary>
+		/// Copies a RenderTarget from one to another
+		/// </summary>
+		/// <param name="From"></param>
+		/// <param name="To"></param>
+		static public void CopyFromTo(GLRenderTarget From, GLRenderTarget To)
+		{
+			Contract.Assert(From != null);
+			Contract.Assert(To != null);
+
+			From.BindUnbind(() =>
+			{
+				if (To.TextureColor != null)
+				{
+					To.TextureColor.BindUnbind(() =>
+					{
+						GL.glCopyTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA4, 0, 0, From.Width, From.Height, 0);
+					});
+				}
+
+				if (To.TextureDepth != null)
+				{
+					To.TextureDepth.BindUnbind(() =>
+					{
+						GL.glCopyTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, 0, 0, From.Width, From.Height, 0);
+					});
+				}
+			});
 		}
 
 		protected GLRenderTarget(int Width, int Height, RenderTargetLayers RenderTargetLayers)

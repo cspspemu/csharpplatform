@@ -60,7 +60,7 @@ namespace CSharpPlatform.GL.Utils
 			Bind();
 		}
 
-		public void BindTemp(Action Action)
+		public void BindUnbind(Action Action)
 		{
 			var OldTexture = (uint)GL.glGetInteger(GL.GL_TEXTURE_BINDING_2D);
 			try
