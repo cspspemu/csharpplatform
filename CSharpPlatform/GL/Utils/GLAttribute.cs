@@ -42,7 +42,11 @@ namespace CSharpPlatform.GL.Utils
 		{
 			if (!IsValid)
 			{
-				if (ShowWarnings) Console.WriteLine("WARNING: Trying to set value to undefined " + typeof(T).Name + ": {0}, {1}", Name, ShowWarnings);
+				if (ShowWarnings)
+				{
+					Console.WriteLine("WARNING: Trying to set value to undefined {0}: {1}, {2}", typeof(T).Name, Name, ShowWarnings);
+					throw(new Exception("INVALID!"));
+				}
 				return false;
 			}
 			return true;

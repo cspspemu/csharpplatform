@@ -80,6 +80,12 @@ namespace CSharpPlatform.GL.Utils
 				Console.Error.WriteLineColored(ConsoleColor.Red, "Shader ERROR (I): {0}, {1}", VertexShaderInfo, FragmentShaderInfo);
 			}
 
+			Console.Out.WriteLineColored(
+				ConsoleColor.Blue,
+				"Compiled Shader! : {0}, {1}",
+				VertexShaderSource, FragmentShaderSource
+			);
+
 			GL.glAttachShader(Program, VertexShader);
 			GL.glAttachShader(Program, FragmentShader);
 			GL.glDeleteShader(VertexShader);

@@ -16,6 +16,16 @@ namespace CSharpPlatform.GL.Utils
 		public int Width { get { return (RenderTarget != null) ? RenderTarget.Width : 0; } }
 		public int Height { get { return (RenderTarget != null) ? RenderTarget.Height : 0; } }
 
+		static public string DefaultVertexShader = @"
+			attribute vec4 a_position;
+			attribute vec4 a_texcoords;
+			varying vec2 v_texcoords;
+			void main() {
+				gl_Position = a_position;
+				v_texcoords = a_texcoords.xy;
+			}
+		";
+
 		private GLShaderFilter(int Width, int Height, GLShader Shader)
 		{
 			this.Shader = Shader;
