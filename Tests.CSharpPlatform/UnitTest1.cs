@@ -8,7 +8,7 @@ namespace Tests.CSharpPlatform
 	public class UnitTest1
 	{
 		[TestMethod]
-		unsafe public void TestMatrix()
+		public void TestMatrix()
 		{
 			Console.WriteLine(Matrix4f.Identity.Translate(2, 2, 0));
 		}

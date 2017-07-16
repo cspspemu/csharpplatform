@@ -31,6 +31,7 @@ namespace CSharpPlatform.UI
 				Done((Value == DialogResult.Yes) ? Result.Yes : Result.No);
 			})
 			{
+				Name = "Dialog.ShowDialog",
 				IsBackground = true,
 			}.Start();
 		}
